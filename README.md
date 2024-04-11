@@ -1,2 +1,2 @@
 # WenCrawler
-A customer web crawler
+A custom web crawler
