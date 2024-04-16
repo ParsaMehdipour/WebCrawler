@@ -14,7 +14,7 @@ class TorobSpider(scrapy.Spider):
         # PCs "https://api.torob.com/v4/base-product/search/?page=2&sort=popularity&size=100&category_name=%D9%84%D9%BE-%D8%AA%D8%A7%D9%BE-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-%D8%A7%D8%AF%D8%A7%D8%B1%DB%8C&category_id=173&category=173&_url_referrer=https%3A%2F%2Fwww.google.com%2F&source=next_desktop&suid=661be9fcf070a382b364232b&_bt__experiment=&_url_referrer="
     ]
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         json_res = json.loads(response.text)
 
         data = json_res['results']
@@ -26,7 +26,8 @@ class TorobSpider(scrapy.Spider):
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
 
-    def parse_product_page(self, response):
+    @staticmethod
+    def parse_product_page(response):
         details_json = json.loads(response.text)
         details_loader = ItemLoader(item=Product())
         details_loader.add_value('image_url', details_json['image_url'])
