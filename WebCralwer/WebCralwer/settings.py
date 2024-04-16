@@ -35,6 +35,11 @@ DOWNLOAD_DELAY = 1
 # TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
+SPIDERMON_ENABLED = True
+
+EXTENSIONS = {
+    'spidermon.contrib.scrapy.extensions.Spidermon': 500,
+}
 # DEFAULT_REQUEST_HEADERS = {
 #    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 #    "Accept-Language": "en",
@@ -92,6 +97,11 @@ SCRAPEOPS_NUM_RESULTS = 30
 # HTTPCACHE_DIR = "httpcache"
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
+
+# tutorial/settings.py
+SPIDERMON_SPIDER_CLOSE_MONITORS = (
+    'WebCralwer.monitors.SpiderCloseMonitorSuite',
+)
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
