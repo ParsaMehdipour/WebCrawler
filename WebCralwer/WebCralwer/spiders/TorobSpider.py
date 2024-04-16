@@ -10,7 +10,9 @@ class TorobSpider(scrapy.Spider):
     name = "TorobSpider"
     allowed_domains = ["api.torob.com"]
     start_urls = [
-        "https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=100&category_name=%D9%85%D9%88%D8%A8%D8%A7%DB%8C%D9%84-%D9%88-%DA%A9%D8%A7%D9%84%D8%A7%DB%8C-%D8%AF%DB%8C%D8%AC%DB%8C%D8%AA%D8%A7%D9%84&category_id=175&category=175&source=next_desktop&suid=66191da888517ca4b24c6853&_bt__experiment=&_url_referrer="]
+        "https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=100&category_name=%D9%85%D9%88%D8%A8%D8%A7%DB%8C%D9%84-%D9%88-%DA%A9%D8%A7%D9%84%D8%A7%DB%8C-%D8%AF%DB%8C%D8%AC%DB%8C%D8%AA%D8%A7%D9%84&category_id=175&category=175&source=next_desktop&suid=66191da888517ca4b24c6853&_bt__experiment=&_url_referrer="
+        # PCs "https://api.torob.com/v4/base-product/search/?page=2&sort=popularity&size=100&category_name=%D9%84%D9%BE-%D8%AA%D8%A7%D9%BE-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-%D8%A7%D8%AF%D8%A7%D8%B1%DB%8C&category_id=173&category=173&_url_referrer=https%3A%2F%2Fwww.google.com%2F&source=next_desktop&suid=661be9fcf070a382b364232b&_bt__experiment=&_url_referrer="
+    ]
 
     def parse(self, response):
         json_res = json.loads(response.text)
