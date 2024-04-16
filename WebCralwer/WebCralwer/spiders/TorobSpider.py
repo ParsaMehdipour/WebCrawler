@@ -49,6 +49,7 @@ class TorobSpider(scrapy.Spider):
             psd_loader.add_value('price', psd['price'])
             psd_loader.add_value('price_text', psd['price_text'])
             psd_loader.add_value('last_price_change_date', psd['last_price_change_date'])
+            psd_loader.add_value('page_url', psd['page_url'])
             details_loader.add_value('product_seller_details', psd_loader.load_item())
 
         yield details_loader.load_item()

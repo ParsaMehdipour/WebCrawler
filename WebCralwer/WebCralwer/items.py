@@ -29,3 +29,4 @@ class ProductSellerDetails(scrapy.Item):
     price = Field(output_processor=TakeFirst())
     price_text = Field(output_processor=TakeFirst())
     last_price_change_date = Field(output_processor=TakeFirst())
+    page_url = Field(output_processor= TakeFirst())
