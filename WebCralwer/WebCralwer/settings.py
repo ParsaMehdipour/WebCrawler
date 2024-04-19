@@ -7,6 +7,16 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+# Disable Scrapy logging and only show custom print logs
+# LOG_ENABLED = False
+LOG_LEVEL = 'INFO'  # Adjust log level as needed
+LOG_FORMAT = '%(asctime)s [%(levelname)s] %(message)s'
+LOG_DATEFORMAT = '%Y-%m-%d %H:%M:%S'
+# LOG_STDOUT = True  # Output log messages to stdout
+
+# Disable default Scrapy loggers
+# LOGGING_CONFIG = None
+
 BOT_NAME = "WebCralwer"
 
 SPIDER_MODULES = ["WebCralwer.spiders"]
@@ -73,9 +83,10 @@ SCRAPEOPS_NUM_RESULTS = 30
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    "WebCralwer.pipelines.WebcralwerPipeline": 300,
-# }
+ITEM_PIPELINES = {
+   "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
+   "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
