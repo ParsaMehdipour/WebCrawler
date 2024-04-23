@@ -7,11 +7,16 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+# Redirect Scrapy logs to the custom logger
+LOG_ENABLED = True
+LOG_STDOUT = True
+LOG_FILE = None
+
 # Disable Scrapy logging and only show custom print logs
 # LOG_ENABLED = False
-LOG_LEVEL = 'INFO'  # Adjust log level as needed
-LOG_FORMAT = '%(asctime)s [%(levelname)s] %(message)s'
-LOG_DATEFORMAT = '%Y-%m-%d %H:%M:%S'
+# LOG_LEVEL = 'INFO'  # Adjust log level as needed
+# LOG_FORMAT = '%(asctime)s [%(levelname)s] %(message)s'
+# LOG_DATEFORMAT = '%Y-%m-%d %H:%M:%S'
 # LOG_STDOUT = True  # Output log messages to stdout
 
 # Disable default Scrapy loggers
@@ -66,10 +71,10 @@ EXTENSIONS = {
 DOWNLOADER_MIDDLEWARES = {
     # "WebCralwer.middlewares.WebcralwerDownloaderMiddleware": 543,
     # "webcrawler.middlewares.ScrapeOpsFakeUserAgentMiddleware": 543,
-    "WebCralwer.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 543,
+    # "WebCralwer.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 543,
 }
 
-SCRAPEOPS_API_KEY = '5bfd225b-d4fc-4c4b-889d-7c4c996f6a02'  # signup at https://scrapeops.io
+SCRAPEOPS_API_KEY = 'e79c3418-3c44-471b-9d10-7edaca2fad6a'  # signup at https://scrapeops.io
 SCRAPEOPS_FAKE_USER_AGENT_ENDPOINT = 'https://headers.scrapeops.io/v1/user-agents'
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT = 'http://headers.scrapeops.io/v1/browser-headers'
 SCRAPEOPS_FAKE_USER_AGENT_ENABLED = True
@@ -84,8 +89,8 @@ SCRAPEOPS_NUM_RESULTS = 30
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
-   "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
+   # "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
+   # "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

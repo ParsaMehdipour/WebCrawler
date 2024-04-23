@@ -115,6 +115,7 @@ class ScrapeOpsFakeUserAgentMiddleware:
         return cls(crawler.settings)
 
     def __init__(self, settings):
+        print("********************** Entered fake user agent fetching ... **********************")
         self.scrapeops_api_key = settings.get('SCRAPEOPS_API_KEY')
         self.scrapeops_endpoint = settings.get('SCRAPEOPS_FAKE_USER_AGENT_ENDPOINT',
                                                'http://headers.scrapeops.io/v1/user-agents?')
@@ -146,7 +147,7 @@ class ScrapeOpsFakeUserAgentMiddleware:
         random_user_agent = self._get_random_user_agent()
         request.headers['User-Agent'] = random_user_agent
 
-        print("************ NEW HEADER ATTACHED *******")
+        print("********************** NEW HEADER ATTACHED **********************")
         print(request.headers['User-Agent'])
 
 
@@ -157,6 +158,7 @@ class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
         return cls(crawler.settings)
 
     def __init__(self, settings):
+        print("********************** Entered fake header fetching ... **********************")
         self.scrapeops_api_key = settings.get('SCRAPEOPS_API_KEY')
         self.scrapeops_endpoint = settings.get('SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT',
                                                'http://headers.scrapeops.io/v1/browser-headers')
@@ -185,6 +187,7 @@ class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
             self.scrapeops_fake_browser_headers_active = True
 
     def process_request(self, request, spider):
+        print("********************** Fetching fake header ... **********************")
         random_browser_header = self._get_random_browser_header()
 
         request.headers['accept-language'] = random_browser_header['accept-language']
@@ -198,5 +201,5 @@ class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
         request.headers['user-agent'] = random_browser_header['user-agent']
         request.headers['upgrade-insecure-requests'] = random_browser_header.get('upgrade-insecure-requests')
 
-        print("************ NEW HEADER ATTACHED *******")
+        print("********************** Fetching fake header ... NEW HEADER ATTACHED **********************")
         print(request.headers)
