@@ -70,65 +70,73 @@ class CreateDatabasePostgresPipeline:
     def __init__(self):
         print("********************** Creating database postgres **********************")
         # Connect to the PostgresSQL database
-        connection = psycopg2.connect(
-            host='localhost',
-            user='docker',
-            password='docker',
-            database='crawler_db'
-        )
-
-        cursor = connection.cursor()
-        print("********************** curser : ", cursor)
-        # Create Products table if none exists
-        cursor.execute("""
-              CREATE TABLE IF NOT EXISTS Products(
-              id TEXT PRIMARY KEY, 
-              image_url TEXT,
-              name1 TEXT,
-              name2 TEXT,
-              more_info_url TEXT,
-              price FLOAT,
-              price_text TEXT,
-              shop_text TEXT,
-              is_stock BOOLEAN,
-              created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-               )
-               """)
-
-        # Create Seller if none exits
-        cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS Sellers(
-                     id SERIAL PRIMARY KEY,
-                     name TEXT,
-                     city TEXT,
-                     is_flagged BOOLEAN,
-                     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                      )
-                    """)
-
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS ProductSellerDetails(
-                id SERIAL PRIMARY KEY,
-                name1 TEXT,
-                name2 TEXT,
-                shop_name TEXT,
-                shop_name2 TEXT,
-                price FLOAT,
-                price_text TEXT,
-                last_price_change_date DATE,
-                page_url TEXT,
-                product_id TEXT REFERENCES Products(id),
-                seller_id INTEGER REFERENCES Sellers(id),
-                is_stock BOOLEAN,
-                created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        try:
+            self.connection = psycopg2.connect(
+                host='localhost',
+                user='docker',
+                password='docker',
+                database='crawler_db'
             )
-        """)
+
+            self.cursor = self.connection.cursor()
+            print("********************** cursor: ", self.cursor)
+
+            # Create 'public' schema if it doesn't exist
+            self.cursor.execute("CREATE SCHEMA IF NOT EXISTS public")
+
+            # Create Products table if none exists
+            self.cursor.execute("""
+                  CREATE TABLE IF NOT EXISTS public.Products(
+                  id TEXT PRIMARY KEY, 
+                  image_url TEXT,
+                  name1 TEXT,
+                  name2 TEXT,
+                  more_info_url TEXT,
+                  price FLOAT,
+                  price_text TEXT,
+                  shop_text TEXT,
+                  is_stock BOOLEAN,
+                  created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                   )
+                   """)
+
+            # Create Seller if none exists
+            self.cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS public.Sellers(
+                         id SERIAL PRIMARY KEY,
+                         name TEXT,
+                         city TEXT,
+                         is_flagged BOOLEAN,
+                         created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                          )
+                        """)
+
+            self.cursor.execute("""
+                CREATE TABLE IF NOT EXISTS public.ProductSellerDetails(
+                    id SERIAL PRIMARY KEY,
+                    name1 TEXT,
+                    name2 TEXT,
+                    shop_name TEXT,
+                    shop_name2 TEXT,
+                    price FLOAT,
+                    price_text TEXT,
+                    last_price_change_date DATE,
+                    page_url TEXT,
+                    product_id TEXT REFERENCES public.Products(id),
+                    seller_id INTEGER REFERENCES public.Sellers(id),
+                    is_stock BOOLEAN,
+                    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            self.connection.commit()
+        except Exception as e:
+            print("Error:", e)
 
     def close_spider(self, spider):
         # Close cursor & connection to database
         print("***************Closing spider***************")
-        cursor.close()
-        connection.close()
+        self.cursor.close()
+        self.connection.close()
 
 
 class InsetIntoDatabasePostgresPipeline:
@@ -165,6 +173,8 @@ class InsetIntoDatabasePostgresPipeline:
                     )
                     session.add(product)
                     session.commit()
+                else:
+                    print("********************** Product item with the fallowing id exists: ", product_id)
 
                 psds = item['product_seller_details']
 
@@ -186,8 +196,10 @@ class InsetIntoDatabasePostgresPipeline:
                                 )
                                 session.add(seller)
                                 session.commit()
+                        else:
+                            print("********************** Seller item with the fallowing id exists: ", seller_id)
 
-                        product_seller_detail = DatabaseProductSellerDetails(
+                        product_seller_details = DatabaseProductSellerDetails(
                             name1=psd.get('name1', 'Empty'),
                             name2=psd.get('name2', 'Empty'),
                             shop_name=psd.get('shop_name', 'Empty'),
@@ -201,11 +213,10 @@ class InsetIntoDatabasePostgresPipeline:
                             is_stock=psd.get('is_stock', 'Empty'),
                             created_on=datetime.now()
                         )
-                        session.add(product_seller_detail)
+                        session.add(product_seller_details)
                         session.commit()
             else:
                 print("********************** Unknown item type:", type(item))
-
         except Exception as e:
             session.rollback()
             raise e
