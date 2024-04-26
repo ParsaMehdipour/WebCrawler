@@ -30,6 +30,20 @@ class DatabaseProduct(Base):
     is_stock = Column(Boolean, default=False)
     created_on = Column(DateTime, default=datetime.now)
 
+    def to_json(self):
+        return {
+            'id': self.id,
+            'image_url': self.image_url,
+            'name1': self.name1,
+            'name2': self.name2,
+            'more_info_url': self.more_info_url,
+            'price': self.price,
+            'price_text': self.price_text,
+            'shop_text': self.shop_text,
+            'is_stock': self.is_stock,
+            'created_on': self.created_on
+        }
+
 
 class DatabaseSeller(Base):
     __tablename__ = 'sellers'
@@ -38,6 +52,15 @@ class DatabaseSeller(Base):
     city = Column(String)
     is_flagged = Column(Boolean, default=False)
     created_on = Column(DateTime, default=datetime.now)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'city': self.city,
+            'is_flagged': self.is_flagged,
+            'created_on': self.created_on
+        }
 
 
 class DatabaseProductSellerDetails(Base):
@@ -57,6 +80,23 @@ class DatabaseProductSellerDetails(Base):
     product_id = Column(String, ForeignKey('products.id'))
     product = relationship("DatabaseProduct")
     seller = relationship("DatabaseSeller")
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'name1': self.name1,
+            'name2': self.name2,
+            'shop_name': self.shop_name,
+            'shop_city': self.shop_city,
+            'price': self.price,
+            'price_text': self.price_text,
+            'last_price_change_date': self.last_price_change_date,
+            'page_url': self.page_url,
+            'is_stock': self.is_stock,
+            'seller_id': self.seller_id,
+            'product_id': self.product_id,
+            'created_on': self.created_on,
+        }
 
 
 class WebcralwerPipeline:
