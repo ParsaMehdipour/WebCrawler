@@ -42,8 +42,9 @@ api = Api(app)
 
 
 # Fetch all products endpoint
-def fetch_all_products():
-    cursor.execute("SELECT * FROM products")
+def fetch_all_products(page=1, per_page=10):
+    offset = (page - 1) * per_page
+    cursor.execute("SELECT * FROM products ORDER BY created_on DESC LIMIT %s OFFSET %s", (per_page, offset))
     result_products = cursor.fetchall()
     products = []
     for row in result_products:
@@ -63,8 +64,13 @@ def fetch_all_products():
 
 
 # Fetch all sellers
-def fetch_all_sellers():
-    cursor.execute("SELECT * FROM sellers")
+def fetch_all_sellers(page=1, per_page=10, search_name=None):
+    offset = (page - 1) * per_page
+    if search_name:
+        cursor.execute("SELECT * FROM sellers WHERE name LIKE %s ORDER BY created_on DESC LIMIT %s OFFSET %s",
+                       ('%' + search_name + '%', per_page, offset))
+    else:
+        cursor.execute("SELECT * FROM sellers ORDER BY created_on DESC LIMIT %s OFFSET %s", (per_page, offset))
     result_sellers = cursor.fetchall()
     sellers = []
     for row in result_sellers:
@@ -79,8 +85,11 @@ def fetch_all_sellers():
 
 
 # Fetch all product seller details
-def fetch_all_product_seller_details(product_id):
-    cursor.execute("SELECT * FROM product_seller_details WHERE product_id = %s", (product_id,))
+def fetch_all_product_seller_details(product_id, page=1, per_page=10):
+    offset = (page - 1) * per_page
+    cursor.execute(
+        "SELECT * FROM product_seller_details WHERE product_id = %s ORDER BY created_on DESC LIMIT %s OFFSET %s",
+        (product_id, per_page, offset))
     result_product_seller_details = cursor.fetchall()
     product_seller_details_list = []
     for row in result_product_seller_details:
@@ -166,6 +175,23 @@ class CrawlTorob(Resource):
 # Crawl endpoint
 api.add_resource(CrawlTorob, "/crawl-torob")
 
+# Define a parser for the product required parameter
+product_seller_details_parser = reqparse.RequestParser()
+product_seller_details_parser.add_argument('productId', type=str, required=True, help='The ID of the product')
+product_seller_details_parser.add_argument('page', type=int, required=False, default=1, help='The page number')
+product_seller_details_parser.add_argument('per_page', type=int, required=False, default=10, help='Items per page')
+
+# Define a parser for the product seller details required parameter
+product_parser = reqparse.RequestParser()
+product_parser.add_argument('page', type=int, required=False, default=1, help='The page number')
+product_parser.add_argument('per_page', type=int, required=False, default=10, help='Items per page')
+
+# Define a parser for the product seller details required parameter
+seller_parser = reqparse.RequestParser()
+seller_parser.add_argument('page', type=int, required=False, default=1, help='The page number')
+seller_parser.add_argument('per_page', type=int, required=False, default=10, help='Items per page')
+seller_parser.add_argument('search_name', type=str, required=False, help='search name')
+
 
 # Test api endpoint
 @api.route('/test')
@@ -178,9 +204,12 @@ class Test(Resource):
 # Products endpoint
 @api.route("/products")
 class Products(Resource):
-    @staticmethod
-    def get():
-        products = fetch_all_products()
+    @api.expect(product_parser)
+    def get(self):
+        args = product_parser.parse_args()
+        page = args['page']
+        per_page = args['per_page']
+        products = fetch_all_products(page, per_page)
         print("********************** Product items count :", len(products))
         return jsonify([p.to_json() for p in products])
 
@@ -188,26 +217,27 @@ class Products(Resource):
 # Sellers endpoint
 @api.route("/sellers")
 class Sellers(Resource):
-    @staticmethod
-    def get():
-        sellers = fetch_all_sellers()
+    @api.expect(seller_parser)
+    def get(self):
+        args = seller_parser.parse_args()
+        page = args['page']
+        per_page = args['per_page']
+        search_name = args['search_name']
+        sellers = fetch_all_sellers(page, per_page, search_name)
         print("********************** Seller items count :", len(sellers))
         return jsonify([s.to_json() for s in sellers])
-
-
-# Define a parser for the productId parameter
-product_parser = reqparse.RequestParser()
-product_parser.add_argument('productId', type=str, required=True, help='The ID of the product')
 
 
 # Product seller details endpoint
 @api.route("/product_seller_details")
 class ProductSellerDetails(Resource):
-    @api.expect(product_parser)
+    @api.expect(product_seller_details_parser)
     def get(self):
-        args = product_parser.parse_args()
+        args = product_seller_details_parser.parse_args()
         product_id = args['productId']
-        product_seller_details = fetch_all_product_seller_details(product_id)
+        page = args['page']
+        per_page = args['per_page']
+        product_seller_details = fetch_all_product_seller_details(product_id, page, per_page)
         print("********************** product seller details items count :", len(product_seller_details))
         return jsonify([psd.to_json() for psd in product_seller_details])
 
