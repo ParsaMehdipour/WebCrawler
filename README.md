@@ -51,5 +51,16 @@ self.engine = create_engine('postgresql://docker:docker@localhost/crawler_db')
 ```
 
 
+## Installing sqlalchemy to work with data and data insertion
+
+```shell
+pip install sqlalchemy
+```
 
 
+## Installing flask to provide API endpoints
+
+```shell
+pip install flask
+pip install flask_restx
+```
