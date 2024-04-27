@@ -25,7 +25,7 @@ class TorobSpider(scrapy.Spider):
             'pipelines.InsetIntoDatabasePostgresPipeline': 400
         },
         'SPIDERMON_SPIDER_CLOSE_MONITORS':{
-            'WebCralwer.monitors.SpiderCloseMonitorSuite'
+            'monitors.SpiderCloseMonitorSuite'
         }
     }
 
