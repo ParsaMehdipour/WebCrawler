@@ -95,7 +95,31 @@ class DatabaseProductSellerDetails(Base):
             'is_stock': self.is_stock,
             'seller_id': self.seller_id,
             'product_id': self.product_id,
+            'created_on': self.created_on
+        }
+
+
+class StructuredProductDto():
+    def __init__(self, name1, name2, price, created_on, is_stock, psd_id, seller_name, seller_city):
+        self.name1 = name1
+        self.name2 = name2
+        self.price = price
+        self.created_on = created_on
+        self.is_stock = is_stock
+        self.psd_id = psd_id
+        self.seller_name = seller_name
+        self.seller_city = seller_city
+
+    def to_json(self):
+        return {
+            'name1': self.name1,
+            'name2': self.name2,
+            'price': self.price,
             'created_on': self.created_on,
+            'is_stock': self.is_stock,
+            'psd_id': self.psd_id,
+            'seller_name': self.seller_name,
+            'seller_city': self.seller_city
         }
 
 
