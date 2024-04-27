@@ -13,8 +13,8 @@ from scrapy.utils.project import get_project_settings
 from flask import Flask, jsonify, request
 from flask_restx import Api, Resource, fields, reqparse
 # Torob crawler
-from WebCralwer.WebCralwer import settings as torob_settings, pipelines, middlewares
-from WebCralwer.WebCralwer.pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails
+import settings as torob_settings, pipelines, middlewares
+from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails
 from spiders import TorobSpider
 # Log
 from twisted.python import log
@@ -29,7 +29,7 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 con = psycopg2.connect(
     host='localhost',
-    user='docker',
+    user='postgres',
     password='docker',
     database='crawler_db'
 )
@@ -135,7 +135,7 @@ class CrawlTorob(Resource):
                 self.crawl_torob_with_crochet(base_url)
 
                 while not self.crawl_complete:
-                    print("********************** Crawling ... **********************")
+                    print("********************** Crawling1 ... **********************")
                     time.sleep(5)
                     if self.crawl_complete:
                         break
@@ -154,6 +154,7 @@ class CrawlTorob(Resource):
     def crawl_torob_with_crochet(self, base_url):
         try:
             # Initialize the crawler object
+            print("********************** crochet ... **********************")
             self.crawler = Crawler(TorobSpider.TorobSpider, get_project_settings())
             self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
             # Set a callback for when the crawl is finished
