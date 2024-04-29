@@ -121,7 +121,7 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
     else:
         search_condition = ""
         search_values = ()
-    query = """SELECT P.name1, P.name2, PSD.price, PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city 
+    query = """SELECT P.name1, P.name2, P.category_name, P.brand_name, PSD.price, PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city 
                    FROM public.product_seller_details PSD
                    INNER JOIN public.products P ON P.id = PSD.product_id
                    INNER JOIN public.sellers S ON S.id = PSD.seller_id
@@ -136,12 +136,14 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
     for row in result_structured_data:
         structured_product = StructuredProductDto(name1=row[0],
                                                   name2=row[1],
-                                                  price=row[2],
-                                                  created_on=row[3],
-                                                  is_stock=row[4],
-                                                  psd_id=row[5],
-                                                  seller_name=row[6],
-                                                  seller_city=row[7])
+                                                  category_name=row[2],
+                                                  brand_name=row[3],
+                                                  price=row[4],
+                                                  created_on=row[5],
+                                                  is_stock=row[6],
+                                                  psd_id=row[7],
+                                                  seller_name=row[8],
+                                                  seller_city=row[9])
         structured_products.append(structured_product)
     return structured_products
 
