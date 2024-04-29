@@ -14,7 +14,7 @@ from flask import Flask, jsonify, request
 from flask_restx import Api, Resource, fields, reqparse
 # Torob crawler
 import settings as torob_settings, pipelines, middlewares
-from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails
+from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
 
 from spiders import TorobSpider
 # Log
@@ -30,7 +30,7 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 con = psycopg2.connect(
     host='localhost',
-    user='postgres',
+    user='docker',
     password='docker',
     database='crawler_db'
 )

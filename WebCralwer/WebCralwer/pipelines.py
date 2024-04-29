@@ -176,7 +176,7 @@ class CreateDatabasePostgresPipeline:
         try:
             self.connection = psycopg2.connect(
                 host='localhost',
-                user='postgres',
+                user='docker',
                 password='docker',
                 database='crawler_db'
             )
@@ -267,7 +267,7 @@ class CreateDatabasePostgresPipeline:
 class InsetIntoDatabasePostgresPipeline:
     def __init__(self):
         # Connect to the database
-        self.engine = create_engine('postgresql://postgres:docker@localhost/crawler_db')
+        self.engine = create_engine('postgresql://docker:docker@localhost/crawler_db')
         Base.metadata.create_all(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
@@ -295,10 +295,10 @@ class InsetIntoDatabasePostgresPipeline:
                                     title=category['title'],
                                     created_on=datetime.now()
                                 )
-                                category_name = category_name + category['title']
-                                brand_name = category['title']
                                 session.add(brand)
                                 session.commit()
+                            category_name = category_name + category['title']
+                            brand_name = category['title']
                         else:
                             existing_category = session.query(DatabaseCategory).filter_by(id=category['id']).first()
                             if existing_category is None:
@@ -309,9 +309,9 @@ class InsetIntoDatabasePostgresPipeline:
                                     brand_id=None,
                                     created_on=datetime.now()
                                 )
-                                category_name = category_name + category['title'] + " - "
                                 session.add(database_category)
                                 session.commit()
+                            category_name = category_name + category['title'] + " - "
 
                 print("********************** Product item:", item['id'], item['name1'], item['name2'])
                 product_id = item['id']
