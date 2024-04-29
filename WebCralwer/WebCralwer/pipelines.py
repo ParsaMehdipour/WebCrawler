@@ -176,7 +176,7 @@ class CreateDatabasePostgresPipeline:
         try:
             self.connection = psycopg2.connect(
                 host='localhost',
-                user='docker',
+                user='postgres',
                 password='docker',
                 database='crawler_db'
             )
@@ -267,7 +267,7 @@ class CreateDatabasePostgresPipeline:
 class InsetIntoDatabasePostgresPipeline:
     def __init__(self):
         # Connect to the database
-        self.engine = create_engine('postgresql://docker:docker@localhost/crawler_db')
+        self.engine = create_engine('postgresql://postgres:docker@localhost/crawler_db')
         Base.metadata.create_all(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
 

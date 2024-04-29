@@ -2,7 +2,7 @@
 import scrapy
 import json
 from scrapy.loader import ItemLoader
-from items import Product, ProductSellerDetails, Seller, Category
+from items import Product, ProductSellerDetails, Seller
 from urllib.parse import urlencode
 
 
@@ -24,8 +24,8 @@ class TorobSpider(scrapy.Spider):
             'pipelines.CreateDatabasePostgresPipeline': 300,
             'pipelines.InsetIntoDatabasePostgresPipeline': 400
         },
-        'SPIDERMON_SPIDER_CLOSE_MONITORS': {
-            'WebCralwer.monitors.SpiderCloseMonitorSuite'
+        'SPIDERMON_SPIDER_CLOSE_MONITORS':{
+            'monitors.SpiderCloseMonitorSuite'
         }
     }
 
@@ -98,27 +98,16 @@ class TorobSpider(scrapy.Spider):
         details_json = json.loads(response.text)
 
         # Create our structured Product item
-        product_loader = ItemLoader(item=Product())
-        product_loader.add_value('image_url', details_json['image_url'])
-        product_loader.add_value('id', product_id)
-        product_loader.add_value('name1', details_json['name1'])
-        product_loader.add_value('name2', details_json['name2'])
-        product_loader.add_value('more_info_url', details_json['more_info_url'])
-        product_loader.add_value('price', details_json['price'])
-        product_loader.add_value('price_text', details_json['price_text'])
-        product_loader.add_value('shop_text', details_json['shop_text'])
-        product_loader.add_value('is_stock', len(details_json['stock_status']) != 0)
-
-        # Create a list to hold Category items
-        category_items = []
-
-        for category in details_json['breadcrumbs']:
-            category_loader = ItemLoader(item=Category())
-            category_loader.add_value('id', category['id'])
-            category_loader.add_value('title', category['title'])
-            category_loader.add_value('url', category['url'])
-            category_loader.add_value('brand_id', category['brand_id'])
-            category_items.append(category_loader.load_item())
+        details_loader = ItemLoader(item=Product())
+        details_loader.add_value('image_url', details_json['image_url'])
+        details_loader.add_value('id', product_id)
+        details_loader.add_value('name1', details_json['name1'])
+        details_loader.add_value('name2', details_json['name2'])
+        details_loader.add_value('more_info_url', details_json['more_info_url'])
+        details_loader.add_value('price', details_json['price'])
+        details_loader.add_value('price_text', details_json['price_text'])
+        details_loader.add_value('shop_text', details_json['shop_text'])
+        details_loader.add_value('is_stock', len(details_json['stock_status']) != 0)
 
         # Create a list to hold ProductSellerDetails items
         product_seller_details_items = []
@@ -151,10 +140,9 @@ class TorobSpider(scrapy.Spider):
             product_seller_details_items.append(psd_loader.load_item())
 
         # Add the list of ProductSellerDetails items to the details_loader
-        product_loader.add_value('product_seller_details', product_seller_details_items)
-        product_loader.add_value('categories', category_items)
+        details_loader.add_value('product_seller_details', product_seller_details_items)
 
-        yield product_loader.load_item()
+        yield details_loader.load_item()
 
     def handle_error(error):
         print("********************** An error occurred:", error.getErrorMessage())
