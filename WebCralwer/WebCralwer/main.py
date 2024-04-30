@@ -14,7 +14,7 @@ from flask import Flask, jsonify, request
 from flask_restx import Api, Resource, fields, reqparse
 # Torob crawler
 import settings as torob_settings, pipelines, middlewares
-from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails
+from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
 
 from spiders import TorobSpider
 # Log
@@ -30,7 +30,7 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 con = psycopg2.connect(
     host='localhost',
-    user='postgres',
+    user='docker',
     password='docker',
     database='crawler_db'
 )
@@ -121,7 +121,9 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
     else:
         search_condition = ""
         search_values = ()
-    query = """SELECT P.name1, P.name2, PSD.price, PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city 
+    query = """SELECT P.name1, P.name2, P.category_name,
+                   P.brand_name, PSD.price, PSD.price_text,
+                   PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city, P.image_url
                    FROM public.product_seller_details PSD
                    INNER JOIN public.products P ON P.id = PSD.product_id
                    INNER JOIN public.sellers S ON S.id = PSD.seller_id
@@ -136,12 +138,16 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
     for row in result_structured_data:
         structured_product = StructuredProductDto(name1=row[0],
                                                   name2=row[1],
-                                                  price=row[2],
-                                                  created_on=row[3],
-                                                  is_stock=row[4],
-                                                  psd_id=row[5],
-                                                  seller_name=row[6],
-                                                  seller_city=row[7])
+                                                  category_name=row[2],
+                                                  brand_name=row[3],
+                                                  price=row[4],
+                                                  price_text=row[5],
+                                                  created_on=row[6],
+                                                  is_stock=row[7],
+                                                  psd_id=row[8],
+                                                  seller_name=row[9],
+                                                  seller_city=row[10],
+                                                  image_url=row[11])
         structured_products.append(structured_product)
     return structured_products
 

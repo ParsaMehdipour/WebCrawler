@@ -28,6 +28,8 @@ class DatabaseProduct(Base):
     price_text = Column(String)
     shop_text = Column(String)
     is_stock = Column(Boolean, default=False)
+    category_name = Column(String)
+    brand_name = Column(String)
     created_on = Column(DateTime, default=datetime.now)
 
     def to_json(self):
@@ -99,27 +101,68 @@ class DatabaseProductSellerDetails(Base):
         }
 
 
-class StructuredProductDto():
-    def __init__(self, name1, name2, price, created_on, is_stock, psd_id, seller_name, seller_city):
+class DatabaseBrand(Base):
+    __tablename__ = 'brands'
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    created_on = Column(DateTime, default=datetime.now)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'created_on': self.created_on
+        }
+
+
+class DatabaseCategory(Base):
+    __tablename__ = 'categories'
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    url = Column(String)
+    brand_id = Column(Integer, ForeignKey('brands.id'))
+    created_on = Column(DateTime, default=datetime.now)
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'url': self.url,
+            'brand_id': self.brand_id,
+            'created_on': self.created_on
+        }
+
+
+class StructuredProductDto:
+    def __init__(self, name1, name2, category_name, brand_name, price, price_text, created_on, is_stock, psd_id, seller_name,
+                 seller_city, image_url):
         self.name1 = name1
         self.name2 = name2
+        self.category_name = category_name
+        self.brand_name = brand_name
         self.price = price
+        self.price_text = price_text
         self.created_on = created_on
         self.is_stock = is_stock
         self.psd_id = psd_id
         self.seller_name = seller_name
         self.seller_city = seller_city
+        self.image_url = image_url
 
     def to_json(self):
         return {
             'name1': self.name1,
             'name2': self.name2,
+            'category_name': self.category_name,
+            'brand_name': self.brand_name,
             'price': self.price,
+            'price_text': self.price_text,
             'created_on': self.created_on,
             'is_stock': self.is_stock,
             'psd_id': self.psd_id,
             'seller_name': self.seller_name,
-            'seller_city': self.seller_city
+            'seller_city': self.seller_city,
+            'image_url': self.image_url
         }
 
 
@@ -137,7 +180,7 @@ class CreateDatabasePostgresPipeline:
         try:
             self.connection = psycopg2.connect(
                 host='localhost',
-                user='postgres',
+                user='docker',
                 password='docker',
                 database='crawler_db'
             )
@@ -150,6 +193,26 @@ class CreateDatabasePostgresPipeline:
 
             # Create Products table if none exists
             self.cursor.execute("""
+                                    CREATE TABLE IF NOT EXISTS public.Brands(
+                                    id SERIAL PRIMARY KEY, 
+                                    title TEXT,
+                                    created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                    )
+                                    """)
+
+            # Create Products table if none exists
+            self.cursor.execute("""
+                                  CREATE TABLE IF NOT EXISTS public.Categories(
+                                  id SERIAL PRIMARY KEY, 
+                                  title TEXT,
+                                  url TEXT,
+                                  brand_id INTEGER REFERENCES public.Brands(id), 
+                                  created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                  )
+                                  """)
+
+            # Create Products table if none exists
+            self.cursor.execute("""
                   CREATE TABLE IF NOT EXISTS public.Products(
                   id TEXT PRIMARY KEY, 
                   image_url TEXT,
@@ -159,6 +222,8 @@ class CreateDatabasePostgresPipeline:
                   price FLOAT,
                   price_text TEXT,
                   shop_text TEXT,
+                  category_name TEXT,
+                  brand_name TEXT,
                   is_stock BOOLEAN,
                   created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                    )
@@ -206,7 +271,7 @@ class CreateDatabasePostgresPipeline:
 class InsetIntoDatabasePostgresPipeline:
     def __init__(self):
         # Connect to the database
-        self.engine = create_engine('postgresql://postgres:docker@localhost/crawler_db')
+        self.engine = create_engine('postgresql://docker:docker@localhost/crawler_db')
         Base.metadata.create_all(bind=self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
@@ -219,6 +284,39 @@ class InsetIntoDatabasePostgresPipeline:
         print("********************** Processing item type:", type(item))
         try:
             if isinstance(item, Product):
+                category_name = ""
+                brand_name = ""
+                categories = item['categories']
+
+                if categories is not None:
+                    for category in categories:
+                        brand_id = category.get('brand_id', 'Empty')
+                        if brand_id != "Empty":
+                            existing_brand = session.query(DatabaseBrand).filter_by(id=brand_id).first()
+                            if existing_brand is None:
+                                brand = DatabaseBrand(
+                                    id=brand_id,
+                                    title=category['title'],
+                                    created_on=datetime.now()
+                                )
+                                session.add(brand)
+                                session.commit()
+                            category_name = category_name + category['title']
+                            brand_name = category['title']
+                        else:
+                            existing_category = session.query(DatabaseCategory).filter_by(id=category['id']).first()
+                            if existing_category is None:
+                                database_category = DatabaseCategory(
+                                    id=category['id'],
+                                    title=category['title'],
+                                    url=category['url'],
+                                    brand_id=None,
+                                    created_on=datetime.now()
+                                )
+                                session.add(database_category)
+                                session.commit()
+                            category_name = category_name + category['title'] + " - "
+
                 print("********************** Product item:", item['id'], item['name1'], item['name2'])
                 product_id = item['id']
                 existing_product = session.query(DatabaseProduct).filter_by(id=product_id).first()
@@ -233,6 +331,8 @@ class InsetIntoDatabasePostgresPipeline:
                         price_text=item['price_text'],
                         shop_text=item['shop_text'],
                         is_stock=item['is_stock'],
+                        category_name=category_name,
+                        brand_name=brand_name,
                         created_on=datetime.now()
                     )
                     session.add(product)
