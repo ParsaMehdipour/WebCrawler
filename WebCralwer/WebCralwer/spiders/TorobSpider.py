@@ -45,7 +45,7 @@ class TorobSpider(scrapy.Spider):
         self.start_urls.append(self.myBaseUrl)
         super().__init__(**kwargs)
 
-    API_KEY = 'e79c3418-3c44-471b-9d10-7edaca2fad6a'
+    API_KEY = '6b98e85e-ad38-466b-806b-7c8511be9d5e'
 
     # Get proxy url from ScrapeOps proxy aggregator
     def get_proxy_url(self, url):
