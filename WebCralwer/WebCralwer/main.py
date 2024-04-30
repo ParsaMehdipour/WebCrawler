@@ -123,7 +123,7 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
         search_values = ()
     query = """SELECT P.name1, P.name2, P.category_name,
                    P.brand_name, PSD.price, PSD.price_text,
-                   PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city 
+                   PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city, P.image_url
                    FROM public.product_seller_details PSD
                    INNER JOIN public.products P ON P.id = PSD.product_id
                    INNER JOIN public.sellers S ON S.id = PSD.seller_id
@@ -146,7 +146,8 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
                                                   is_stock=row[7],
                                                   psd_id=row[8],
                                                   seller_name=row[9],
-                                                  seller_city=row[10])
+                                                  seller_city=row[10],
+                                                  image_url=row[11])
         structured_products.append(structured_product)
     return structured_products
 
