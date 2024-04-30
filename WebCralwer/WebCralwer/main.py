@@ -13,8 +13,9 @@ from scrapy.utils.project import get_project_settings
 from flask import Flask, jsonify, request
 from flask_restx import Api, Resource, fields, reqparse
 # Torob crawler
-from WebCralwer.WebCralwer import settings as torob_settings, pipelines, middlewares
-from WebCralwer.WebCralwer.pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails
+import settings as torob_settings, pipelines, middlewares
+from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
+
 from spiders import TorobSpider
 # Log
 from twisted.python import log
@@ -111,6 +112,46 @@ def fetch_all_product_seller_details(product_id, page=1, per_page=10):
     return product_seller_details_list
 
 
+def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
+    offset = (page - 1) * per_page
+    if search_name is not None:
+        # Use LIKE operator to perform partial string matching
+        search_condition = "AND (P.name1 LIKE %s OR S.name LIKE %s OR S.city LIKE %s)"
+        search_values = ('%' + search_name + '%', '%' + search_name + '%', '%' + search_name + '%')
+    else:
+        search_condition = ""
+        search_values = ()
+    query = """SELECT P.name1, P.name2, P.category_name,
+                   P.brand_name, PSD.price, PSD.price_text,
+                   PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city, P.image_url
+                   FROM public.product_seller_details PSD
+                   INNER JOIN public.products P ON P.id = PSD.product_id
+                   INNER JOIN public.sellers S ON S.id = PSD.seller_id
+                   WHERE 1=1 {search_condition}
+                   ORDER BY PSD.created_on DESC
+                   LIMIT %s OFFSET %s""".format(search_condition=search_condition)
+
+    cursor.execute(query, search_values + (per_page, offset))
+    result_structured_data = cursor.fetchall()
+    structured_products = []
+
+    for row in result_structured_data:
+        structured_product = StructuredProductDto(name1=row[0],
+                                                  name2=row[1],
+                                                  category_name=row[2],
+                                                  brand_name=row[3],
+                                                  price=row[4],
+                                                  price_text=row[5],
+                                                  created_on=row[6],
+                                                  is_stock=row[7],
+                                                  psd_id=row[8],
+                                                  seller_name=row[9],
+                                                  seller_city=row[10],
+                                                  image_url=row[11])
+        structured_products.append(structured_product)
+    return structured_products
+
+
 # Request body
 crawl_request_body = api.model('CrawlRequest', {
     'url': fields.String(required=True, description='The URL to crawl')
@@ -135,7 +176,7 @@ class CrawlTorob(Resource):
                 self.crawl_torob_with_crochet(base_url)
 
                 while not self.crawl_complete:
-                    print("********************** Crawling ... **********************")
+                    print("********************** Crawling1 ... **********************")
                     time.sleep(5)
                     if self.crawl_complete:
                         break
@@ -154,6 +195,7 @@ class CrawlTorob(Resource):
     def crawl_torob_with_crochet(self, base_url):
         try:
             # Initialize the crawler object
+            print("********************** crochet ... **********************")
             self.crawler = Crawler(TorobSpider.TorobSpider, get_project_settings())
             self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
             # Set a callback for when the crawl is finished
@@ -192,6 +234,12 @@ seller_parser.add_argument('page', type=int, required=False, default=1, help='Th
 seller_parser.add_argument('per_page', type=int, required=False, default=10, help='Items per page')
 seller_parser.add_argument('search_name', type=str, required=False, help='search name')
 
+# Define a parser for the structured product data required parameter
+structured_product_data_parser = reqparse.RequestParser()
+structured_product_data_parser.add_argument('page', type=int, required=False, default=1, help='The page number')
+structured_product_data_parser.add_argument('per_page', type=int, required=False, default=10, help='Items per page')
+structured_product_data_parser.add_argument('search_name', type=str, required=False, help='search name')
+
 
 # Test api endpoint
 @api.route('/test')
@@ -199,6 +247,19 @@ class Test(Resource):
     @staticmethod
     def get():
         return {'Test': 'Success'}
+
+
+@api.route("/structure_products")
+class StructuredProducts(Resource):
+    @api.expect(structured_product_data_parser)
+    def get(self):
+        args = structured_product_data_parser.parse_args()
+        page = args['page']
+        per_page = args['per_page']
+        search_name = args['search_name']
+        structured_products = fetch_structured_products_with_search(page, per_page, search_name)
+        print("********************** Structured products items count :", len(structured_products))
+        return jsonify([sp.to_json() for sp in structured_products])
 
 
 # Products endpoint

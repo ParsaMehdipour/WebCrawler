@@ -22,6 +22,7 @@ class Product(scrapy.Item):
     shop_text = Field(output_processor=TakeFirst())
     is_stock = Field(output_processor=TakeFirst())
     product_seller_details = Field()
+    categories = Field()
 
 
 class ProductSellerDetails(scrapy.Item):
@@ -34,7 +35,7 @@ class ProductSellerDetails(scrapy.Item):
     price_text = Field(output_processor=TakeFirst())
     last_price_change_date = Field(output_processor=TakeFirst())
     is_stock = Field(output_processor=TakeFirst())
-    page_url = Field(output_processor= TakeFirst())
+    page_url = Field(output_processor=TakeFirst())
     product_id = Field(output_processor=TakeFirst())
     seller_id = Field(output_processor=TakeFirst())
     seller = Field(output_processor=TakeFirst())
@@ -44,3 +45,10 @@ class Seller(scrapy.Item):
     id = Field(output_processor=TakeFirst())
     name = Field(output_processor=TakeFirst())
     city = Field(output_processor=TakeFirst())
+
+
+class Category(scrapy.Item):
+    id = Field(output_processor=TakeFirst())
+    title = Field(output_processor=TakeFirst())
+    url = Field(output_processor=TakeFirst())
+    brand_id = Field(output_processor=TakeFirst())
