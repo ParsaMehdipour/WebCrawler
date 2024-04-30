@@ -135,7 +135,7 @@ class DatabaseCategory(Base):
 
 class StructuredProductDto:
     def __init__(self, name1, name2, category_name, brand_name, price, price_text, created_on, is_stock, psd_id, seller_name,
-                 seller_city):
+                 seller_city, image_url):
         self.name1 = name1
         self.name2 = name2
         self.category_name = category_name
@@ -147,6 +147,7 @@ class StructuredProductDto:
         self.psd_id = psd_id
         self.seller_name = seller_name
         self.seller_city = seller_city
+        self.image_url = image_url
 
     def to_json(self):
         return {
@@ -160,7 +161,8 @@ class StructuredProductDto:
             'is_stock': self.is_stock,
             'psd_id': self.psd_id,
             'seller_name': self.seller_name,
-            'seller_city': self.seller_city
+            'seller_city': self.seller_city,
+            'image_url': self.image_url
         }
 
 
