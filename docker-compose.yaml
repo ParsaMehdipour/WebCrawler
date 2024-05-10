@@ -1,0 +1,30 @@
+version: '3.4'
+
+services:
+  crawler:
+    image: ${DOCKER_REGISTRY-}crawler
+    container_name: crawler
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgresDb
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - crawler-network
+  postgresDb:
+    image: postgres
+    container_name: postgresDb
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: docker
+      POSTGRES_USER: docker
+    ports:
+      - 5432:5432
+    networks:
+      - crawler-network
+  
+networks:
+  crawler-network:
+    name: crawler-network
