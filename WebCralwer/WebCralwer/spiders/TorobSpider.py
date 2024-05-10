@@ -18,7 +18,9 @@ class TorobSpider(scrapy.Spider):
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
         'DOWNLOADER_MIDDLEWARES': {
-            'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
+            'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543,
+            "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
+            "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
         },
         'ITEM_PIPELINES': {
             'pipelines.CreateDatabasePostgresPipeline': 300,
@@ -60,7 +62,8 @@ class TorobSpider(scrapy.Spider):
     # Start requests
     def start_requests(self):
         print("********************** Starting requests ...")
-        yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
+        # yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
+        yield scrapy.Request(url=self.start_urls[0], callback=self.parse)
 
     # Parse the response
     def parse(self, response, **kwargs):
@@ -79,8 +82,10 @@ class TorobSpider(scrapy.Spider):
 
             print("********************** product_id : ", product_id)
             # Send api call to the more info url
-            yield scrapy.Request(url=self.get_proxy_url(more_info_url), callback=self.parse_product_page,
-                                 cb_kwargs={'product_id': product_id})
+            # yield scrapy.Request(url=self.get_proxy_url(more_info_url), callback=self.parse_product_page,
+            #                      cb_kwargs={'product_id': product_id})
+            yield response.follow(url=more_info_url, callback=self.parse_product_page,
+                                  cb_kwargs={'product_id': product_id})
 
         # Response contains a field with the name of 'next' which is the url of the next page in our pagination,
         # when it does not exist means that there are no next pages
