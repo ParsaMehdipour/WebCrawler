@@ -89,8 +89,8 @@ SCRAPEOPS_NUM_RESULTS = 30
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   # "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
-   # "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
+    # "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
+    # "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -127,3 +127,5 @@ FEED_EXPORT_ENCODING = "utf-8"
 FEED_EXPORTERS = {
     'xlsx': 'scrapy_xlsx.XlsxItemExporter',
 }
+
+# ROTATING_PROXY_LIST_PATH = 'IR-Proxy.txt'
