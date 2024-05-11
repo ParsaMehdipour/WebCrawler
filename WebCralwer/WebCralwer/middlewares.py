@@ -203,3 +203,26 @@ class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
 
         print("********************** Fetching fake header ... NEW HEADER ATTACHED **********************")
         print(request.headers)
+
+
+from stem import Signal
+from stem.control import Controller
+from stem.util.log import get_logger
+from scrapy.downloadermiddlewares.httpproxy import HttpProxyMiddleware
+
+
+def _set_new_ip():
+    logger = get_logger()
+    logger.propagate = False
+
+    with Controller.from_port(port=9051) as controller:
+        controller.authenticate(password='Crawler-Pass')  # tor password
+        controller.signal(Signal.NEWNYM)
+
+
+class ProxyMiddleware:
+
+    def process_request(self, request, spider):
+        _set_new_ip()
+        request.meta['proxy'] = 'http://127.0.0.1:8118'
+        print("proxy used: ", request.meta['proxy'])
