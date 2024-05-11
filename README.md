@@ -66,7 +66,7 @@ pip install flask_restx
 ```
 
 
-## For starters pass the following link to the /crawl endpoint
+## For starters pass the following link to the /crawl-torob endpoint
 
 https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=10&category_name=%D9%85%D9%88%D8%A8%D8%A7%DB%8C%D9%84-%D9%88-%DA%A9%D8%A7%D9%84%D8%A7%DB%8C-%D8%AF%DB%8C%D8%AC%DB%8C%D8%AA%D8%A7%D9%84&category_id=175&category=175&source=next_desktop&suid=66191da888517ca4b24c6853&_bt__experiment=&_url_referrer=
 
