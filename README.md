@@ -65,7 +65,7 @@ pip install flask
 pip install flask_restx
 ```
 
-#Update :
+## Update :
 
 I have added the requirements.txt to make installing the needed packages easier
 
