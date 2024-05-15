@@ -18,8 +18,8 @@ class TorobSpider(scrapy.Spider):
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
         'DOWNLOADER_MIDDLEWARES': {
-            'middlewares.ProxyMiddleware': 523,
-            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 533,
+            # 'middlewares.ProxyMiddleware': 523,
+            # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 533,
             'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543,
         },
         'ITEM_PIPELINES': {
