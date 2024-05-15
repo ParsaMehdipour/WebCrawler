@@ -33,9 +33,9 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 # Searching database connection
 con = psycopg2.connect(
-    host='postgresDb',
-    user='docker',
-    password='docker',
+    host='5.34.204.101:5432',
+    user='crawler',
+    password='123',
     database='crawler_db'
 )
 
