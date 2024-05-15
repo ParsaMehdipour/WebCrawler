@@ -45,7 +45,7 @@ cursor = con.cursor()
 # app , api
 app = Flask(__name__)
 # Flask database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://docker:docker@192.168.56.1/crawler_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://crawler:123@5.34.204.101:5432/crawler_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'CrawlerPy'
 
