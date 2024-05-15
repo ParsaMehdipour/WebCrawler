@@ -20,7 +20,7 @@ class TorobSpider(scrapy.Spider):
         'DOWNLOADER_MIDDLEWARES': {
             # 'middlewares.ProxyMiddleware': 523,
             # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 533,
-            'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543,
+            'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
         },
         'ITEM_PIPELINES': {
             'pipelines.CreateDatabasePostgresPipeline': 300,
