@@ -134,7 +134,8 @@ class DatabaseCategory(Base):
 
 
 class StructuredProductDto:
-    def __init__(self, name1, name2, category_name, brand_name, price, price_text, created_on, is_stock, psd_id, seller_name,
+    def __init__(self, name1, name2, category_name, brand_name, price, price_text, created_on, is_stock, psd_id,
+                 seller_name,
                  seller_city, image_url):
         self.name1 = name1
         self.name2 = name2
@@ -179,7 +180,8 @@ class CreateDatabasePostgresPipeline:
         # Connect to the PostgresSQL database
         try:
             self.connection = psycopg2.connect(
-                host='5.34.204.101:5432',
+                host='5.34.204.101',
+                port='5432',
                 user='crawler',
                 password='123',
                 database='crawler_db'

@@ -33,9 +33,10 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 # Searching database connection
 con = psycopg2.connect(
-    host='5.34.204.101:5432',
+    host='5.34.204.101',
     user='crawler',
     password='123',
+    port='5432',
     database='crawler_db'
 )
 
