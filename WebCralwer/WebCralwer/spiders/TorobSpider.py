@@ -12,6 +12,7 @@ class TorobSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
+	'LOG_LEVEL': 'DEBUG',
         'SCRAPEOPS_API_KEY': 'e79c3418-3c44-471b-9d10-7edaca2fad6a',
         'SCRAPEOPS_FAKE_USER_AGENT_ENDPOINT': 'https://headers.scrapeops.io/v1/user-agents',
         'SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT': 'http://headers.scrapeops.io/v1/browser-headers',

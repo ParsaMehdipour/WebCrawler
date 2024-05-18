@@ -33,8 +33,8 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 # Searching database connection
 con = psycopg2.connect(
-    host='5.34.204.101',
-    user='crawler',
+    host='localhost',
+    user='crawler_db',
     password='123',
     port='5432',
     database='crawler_db'
@@ -46,7 +46,7 @@ cursor = con.cursor()
 # app , api
 app = Flask(__name__)
 # Flask database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://crawler:123@5.34.204.101:5432/crawler_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://crawler_db:123@localhost:5432/crawler_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'CrawlerPy'
 
