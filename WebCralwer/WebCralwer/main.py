@@ -13,33 +13,83 @@ from scrapy.utils.project import get_project_settings
 from flask import Flask, jsonify, request
 from flask_restx import Api, Resource, fields, reqparse
 # Torob crawler
-from WebCralwer.WebCralwer import settings as torob_settings, pipelines, middlewares
-from WebCralwer.WebCralwer.pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, \
-    StructuredProductDto
+import settings as torob_settings, pipelines, middlewares
+from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
 from spiders import TorobSpider
 # Log
 from twisted.python import log
 # Database
 import psycopg2
+# Datetime
+from datetime import datetime, timedelta
+# SQL Alchemy
+from flask_sqlalchemy import SQLAlchemy
 
-crochet.setup()  # setting up crochet to execute
-# CRAWL_RUNNER = CrawlerRunner(get_project_settings())  # initialize CrawlerRunner
+# setting up crochet to execute
+crochet.setup()
 
 # Configur logging
 configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
+# Searching database connection
 con = psycopg2.connect(
-    host='localhost',
+    host='postgresDb',
     user='docker',
     password='docker',
     database='crawler_db'
 )
 
+# Cursor to execute sql commands
 cursor = con.cursor()
 
 # app , api
 app = Flask(__name__)
-api = Api(app)
+# Flask database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://docker:docker@192.168.56.1/crawler_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'CrawlerPy'
+
+# Db
+db = SQLAlchemy(app)
+
+
+# User model
+class UserModel(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+
+    def save_to_db(self):
+        print("********************** Inserting into database ...")
+        db.session.add(self)
+        db.session.commit()
+
+    @classmethod
+    def find_by_username(cls, username):
+        return cls.query.filter_by(username=username).first()
+
+
+# Create tables
+@app.before_request
+def create_tables():
+    # The following line will remove this handler, making it
+    # only run on the first request
+    print("********************** Creating tables ...")
+    app.before_request_funcs[None].remove(create_tables)
+
+    db.create_all()
+
+
+# Swagger UI JWT token configuration
+api = Api(app, authorizations={
+    'Bearer Auth': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization'
+    }
+})
 
 
 # Fetch all products endpoint
@@ -121,7 +171,9 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
     else:
         search_condition = ""
         search_values = ()
-    query = """SELECT P.name1, P.name2, PSD.price, PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city 
+    query = """SELECT P.name1, P.name2, P.category_name,
+                   P.brand_name, PSD.price, PSD.price_text,
+                   PSD.created_on, PSD.is_stock, PSD.id, S.name, S.city, P.image_url
                    FROM public.product_seller_details PSD
                    INNER JOIN public.products P ON P.id = PSD.product_id
                    INNER JOIN public.sellers S ON S.id = PSD.seller_id
@@ -136,12 +188,16 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
     for row in result_structured_data:
         structured_product = StructuredProductDto(name1=row[0],
                                                   name2=row[1],
-                                                  price=row[2],
-                                                  created_on=row[3],
-                                                  is_stock=row[4],
-                                                  psd_id=row[5],
-                                                  seller_name=row[6],
-                                                  seller_city=row[7])
+                                                  category_name=row[2],
+                                                  brand_name=row[3],
+                                                  price=row[4],
+                                                  price_text=row[5],
+                                                  created_on=row[6],
+                                                  is_stock=row[7],
+                                                  psd_id=row[8],
+                                                  seller_name=row[9],
+                                                  seller_city=row[10],
+                                                  image_url=row[11])
         structured_products.append(structured_product)
     return structured_products
 
@@ -189,6 +245,7 @@ class CrawlTorob(Resource):
     def crawl_torob_with_crochet(self, base_url):
         try:
             # Initialize the crawler object
+            print("********************** crochet ... **********************")
             self.crawler = Crawler(TorobSpider.TorobSpider, get_project_settings())
             self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
             # Set a callback for when the crawl is finished
@@ -232,6 +289,15 @@ structured_product_data_parser = reqparse.RequestParser()
 structured_product_data_parser.add_argument('page', type=int, required=False, default=1, help='The page number')
 structured_product_data_parser.add_argument('per_page', type=int, required=False, default=10, help='Items per page')
 structured_product_data_parser.add_argument('search_name', type=str, required=False, help='search name')
+
+# Define a parser for the user required parameter
+user_model = api.model('User', {
+    'username': fields.String(description='The username', required=True),
+    'password': fields.String(description='The password', required=True),
+})
+
+user_parser = reqparse.RequestParser()
+user_parser.add_argument('user', type=dict, location='json', required=True)
 
 
 # Test api endpoint
@@ -296,5 +362,81 @@ class ProductSellerDetails(Resource):
         return jsonify([psd.to_json() for psd in product_seller_details])
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+class UserRegistration(Resource):
+    @api.expect(user_model)
+    def post(self):
+        # this will automatically parse the JSON body
+        data = api.payload
+        username = data.get('username')
+        password = data.get('password')
+        new_user = UserModel(
+            username=username,
+            password=password
+        )
+        try:
+            if UserModel.find_by_username(data['username']):
+                return {'message': 'User {} already exists'.format(data['username'])}
+            new_user.save_to_db()
+            return {
+                'message': 'User {} was created'.format(data['username'])
+            }
+        except:
+            return {'message': 'Something went wrong'}, 500
+
+
+class UserLogin(Resource):
+    @api.expect(user_model)
+    def post(self):
+        data = api.payload  # this will automatically parse the JSON body
+        username = data.get('username')
+        password = data.get('password')
+        current_user = UserModel.find_by_username(username)
+        if not current_user:
+            return {'message': 'User {} doesn\'t exist'.format(username)}
+
+        if password == current_user.password:
+            return {'message': 'Logged in as {}'.format(current_user.username)}
+        else:
+            return {'message': 'Wrong credentials'}
+
+
+class UserLogoutAccess(Resource):
+    def post(self):
+        return {'message': 'User logout'}
+
+
+class UserLogoutRefresh(Resource):
+    def post(self):
+        return {'message': 'User logout'}
+
+
+class TokenRefresh(Resource):
+    def post(self):
+        return {'message': 'Token refresh'}
+
+
+class AllUsers(Resource):
+    def get(self):
+        return {'message': 'List of users'}
+
+    def delete(self):
+        return {'message': 'Delete all users'}
+
+
+class SecretResource(Resource):
+    def get(self):
+        return {
+            'answer': 42
+        }
+
+
+api.add_resource(UserRegistration, '/registration')
+api.add_resource(UserLogin, '/login')
+api.add_resource(UserLogoutAccess, '/logout/access')
+api.add_resource(UserLogoutRefresh, '/logout/refresh')
+api.add_resource(TokenRefresh, '/token/refresh')
+api.add_resource(AllUsers, '/users')
+api.add_resource(SecretResource, '/secret')
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', debug=True)

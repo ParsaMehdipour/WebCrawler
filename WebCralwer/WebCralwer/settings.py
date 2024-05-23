@@ -74,7 +74,7 @@ DOWNLOADER_MIDDLEWARES = {
     # "WebCralwer.middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware": 543,
 }
 
-SCRAPEOPS_API_KEY = 'e79c3418-3c44-471b-9d10-7edaca2fad6a'  # signup at https://scrapeops.io
+SCRAPEOPS_API_KEY = '6b98e85e-ad38-466b-806b-7c8511be9d5e'  # signup at https://scrapeops.io
 SCRAPEOPS_FAKE_USER_AGENT_ENDPOINT = 'https://headers.scrapeops.io/v1/user-agents'
 SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT = 'http://headers.scrapeops.io/v1/browser-headers'
 SCRAPEOPS_FAKE_USER_AGENT_ENABLED = True
@@ -89,8 +89,8 @@ SCRAPEOPS_NUM_RESULTS = 30
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   # "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
-   # "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
+    # "WebCralwer.pipelines.CreateDatabasePostgresPipeline": 300,
+    # "WebCralwer.pipelines.InsetIntoDatabasePostgresPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -127,3 +127,5 @@ FEED_EXPORT_ENCODING = "utf-8"
 FEED_EXPORTERS = {
     'xlsx': 'scrapy_xlsx.XlsxItemExporter',
 }
+
+# ROTATING_PROXY_LIST_PATH = 'IR-Proxy.txt'

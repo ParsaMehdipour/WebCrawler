@@ -65,6 +65,17 @@ pip install flask
 pip install flask_restx
 ```
 
+## Update :
+
+I have added the requirements.txt to make installing the needed packages easier
+
+and also I have added Dockerfile with the docker-compose to containerize the project
+
+Simply run the following command in the directory which the docker-compose file exists
+
+```shell
+docker-compose up
+```
 
 ## For starters pass the following link to the /crawl-torob endpoint
 
