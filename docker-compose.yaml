@@ -20,7 +20,7 @@ services:
     container_name: postgresDb
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U docker -d crawler_db"]
       interval: 30s
       timeout: 10s
       retries: 5
