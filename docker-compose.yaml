@@ -13,13 +13,24 @@ services:
       dockerfile: ./Dockerfile
     networks:
       - crawler-network
+
+
   postgresDb:
     image: postgres
     container_name: postgresDb
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     environment:
       POSTGRES_PASSWORD: docker
       POSTGRES_USER: docker
+      PGDATA: /data/postgres
+      POSTGRES_DB: crawler_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     networks:
@@ -28,3 +39,6 @@ services:
 networks:
   crawler-network:
     name: crawler-network
+
+volumes:
+  db-data:
