@@ -151,6 +151,27 @@ class ScrapeOpsFakeUserAgentMiddleware:
         print(request.headers['User-Agent'])
 
 
+class WhatsMyIpMiddleware:
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls()
+
+    def __init__(self):
+        print("********************** Whats my ip? Middleware initialized **********************")
+        self._whats_my_ip()
+
+    def _whats_my_ip(self):
+        try:
+            response = requests.get('http://icanhazip.com/', timeout=5)
+            response.raise_for_status()
+            print(f"********************** IP: {response.text.strip()} **********************")
+        except requests.RequestException as e:
+            print(f"********************** Failed to fetch IP: {e} **********************")
+
+    def process_request(self, request, spider):
+        self._whats_my_ip()
+
+
 class ScrapeOpsFakeBrowserHeaderAgentMiddleware:
 
     @classmethod
