@@ -18,9 +18,10 @@ class TorobSpider(scrapy.Spider):
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
         'DOWNLOADER_MIDDLEWARES': {
-            'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543,
-            "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
-            "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
+            'middlewares.WhatsMyIpMiddleware': 533,
+            'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
+            # "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
+            # "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
         },
         'ITEM_PIPELINES': {
             'pipelines.CreateDatabasePostgresPipeline': 300,
