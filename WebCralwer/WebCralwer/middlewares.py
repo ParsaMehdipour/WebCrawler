@@ -162,7 +162,7 @@ class WhatsMyIpMiddleware:
 
     def _whats_my_ip(self):
         try:
-            response = requests.get('http://icanhazip.com/', timeout=5)
+            response = requests.get('http://icanhazip.com/', proxies='socks5://torproxy:9050', timeout=5)
             response.raise_for_status()
             print(f"********************** IP: {response.text.strip()} **********************")
         except requests.RequestException as e:
@@ -252,3 +252,4 @@ class ProxyMiddleware(HttpProxyMiddleware):
         # Comment out if you want to get a new Identity only through process_response
         new_tor_identity()
         request.meta['proxy'] = 'http://127.0.0.1:8118'
+

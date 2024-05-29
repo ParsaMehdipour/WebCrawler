@@ -17,12 +17,10 @@ class TorobSpider(scrapy.Spider):
         'SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT': 'http://headers.scrapeops.io/v1/browser-headers',
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
+        'DOWNLOAD_DELAY': 2,
         'DOWNLOADER_MIDDLEWARES': {
-            'middlewares.ProxyMiddleware.ProxyMiddleware': 523,
-            'middlewares.WhatsMyIpMiddleware': 533,
+            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1,
             'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
-            # "rotating_proxies.middlewares.RotatingProxyMiddleware": 610,
-            # "rotating_proxies.middlewares.BanDetectionMiddleware": 620,
         },
         'ITEM_PIPELINES': {
             'pipelines.CreateDatabasePostgresPipeline': 300,
@@ -64,12 +62,23 @@ class TorobSpider(scrapy.Spider):
     # Start requests
     def start_requests(self):
         print("********************** Starting requests ...")
+        # Check IP address to verify proxy
+        ip_check_url = 'http://httpbin.org/ip'
+        yield scrapy.Request(url=ip_check_url, callback=self.parse_ip)
         # yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
         yield scrapy.Request(url=self.start_urls[0], callback=self.parse)
+
+    # Check the IP
+    def parse_ip(self, response):
+        print(f"********************** Checking Current IP ...")
+        ip_info = json.loads(response.text)
+        print(f"********************** Current IP: {ip_info['origin']}")
 
     # Parse the response
     def parse(self, response, **kwargs):
         json_res = json.loads(response.text)
+        ip_check_url = 'http://httpbin.org/ip'
+        print("********************** Is proxy in response.meta?: ", response.meta)
 
         data = json_res['results']
 
@@ -86,6 +95,7 @@ class TorobSpider(scrapy.Spider):
             # Send api call to the more info url
             # yield scrapy.Request(url=self.get_proxy_url(more_info_url), callback=self.parse_product_page,
             #                      cb_kwargs={'product_id': product_id})
+            yield scrapy.Request(url=ip_check_url, callback=self.parse_ip, meta={'response': response})
             yield response.follow(url=more_info_url, callback=self.parse_product_page,
                                   cb_kwargs={'product_id': product_id})
 
