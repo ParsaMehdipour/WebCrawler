@@ -1,26 +1,15 @@
 version: '3.4'
 
 services:
-  crawler:
-    image: ${DOCKER_REGISTRY-}crawler
-    container_name: crawler
-    ports:
-      - 5000:5000
-    depends_on:
-      - postgresDb
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    networks:
-      - crawler-network
-
 
   postgresDb:
     image: postgres
     container_name: postgresDb
-    restart: unless-stopped
+    deploy:
+      restart_policy:
+        condition: on-failure
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U docker -d crawler_db"]
+      test: [ "CMD-SHELL", "pg_isready -U docker -d crawler_db" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -35,7 +24,52 @@ services:
       - 5432:5432
     networks:
       - crawler-network
-  
+
+
+  torproxy:
+    image: dperson/torproxy
+    container_name: torproxy
+    restart: always
+    ports:
+      - "9050:9050"
+    networks:
+      - crawler-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+
+  polipo:
+    image: 'clue/polipo'
+    command: proxyAddress=0.0.0.0 proxyPort=8181 socksParentProxy=torproxy:9050
+    deploy:
+      restart_policy:
+        condition: on-failure
+    networks:
+      - crawler-network
+
+
+  crawler:
+    image: ${DOCKER_REGISTRY-}crawler
+    container_name: crawler
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgresDb
+      - torproxy
+    environment:
+      - http_proxy=http://polipo:8181
+      - https_proxy=http://polipo:8181
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - crawler-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+
 networks:
   crawler-network:
     name: crawler-network

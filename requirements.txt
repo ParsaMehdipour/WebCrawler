@@ -10,3 +10,8 @@ SQLAlchemy==2.0.29
 text-unidecode==1.3
 crochet==2.1.1
 psycopg2-binary==2.9.9
+Twisted~=24.3.0
+itemloaders~=1.1.0
+itemadapter~=0.8.0
+requests~=2.31.0
+stem~=1.8.2
