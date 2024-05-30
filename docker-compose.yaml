@@ -41,6 +41,7 @@ services:
 
   polipo:
     image: 'clue/polipo'
+    container_name: polipo
     command: proxyAddress=0.0.0.0 proxyPort=8181 socksParentProxy=torproxy:9050
     deploy:
       restart_policy:
