@@ -66,7 +66,8 @@ class TorobSpider(scrapy.Spider):
         ip_check_url = 'http://httpbin.org/ip'
         yield scrapy.Request(url=ip_check_url, callback=self.parse_ip)
         # yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
-        yield scrapy.Request(url=self.start_urls[0], callback=self.parse)
+        print("********************** Passed Urls till now : ", self.start_urls)
+        yield scrapy.Request(url=self.start_urls[-1], callback=self.parse)
 
     # Check the IP
     def parse_ip(self, response):
