@@ -63,7 +63,7 @@ class TorobSpider(scrapy.Spider):
     def start_requests(self):
         print("********************** Starting requests ...")
         # Check IP address to verify proxy
-        ip_check_url = 'http://httpbin.org/ip'
+        ip_check_url = 'https://icanhazip.com/'
         yield scrapy.Request(url=ip_check_url, callback=self.parse_ip)
         # yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
         print("********************** Passed Urls till now : ", self.start_urls)
@@ -72,13 +72,13 @@ class TorobSpider(scrapy.Spider):
     # Check the IP
     def parse_ip(self, response):
         print(f"********************** Checking Current IP ...")
-        ip_info = json.loads(response.text)
-        print(f"********************** Current IP: {ip_info['origin']}")
+        ip_info = response.text
+        print(f"********************** Current IP: {ip_info}")
 
     # Parse the response
     def parse(self, response, **kwargs):
         json_res = json.loads(response.text)
-        ip_check_url = 'http://httpbin.org/ip'
+        ip_check_url = 'https://icanhazip.com/'
         print("********************** Is proxy in response.meta?: ", response.meta)
 
         data = json_res['results']
