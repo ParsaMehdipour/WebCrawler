@@ -35,7 +35,7 @@ class TorobSpider(scrapy.Spider):
     def update_settings(cls, settings):
         super().update_settings(settings)
 
-    allowed_domains = ["api.torob.com", "proxy.scrapeops.io"]
+    allowed_domains = ["api.torob.com", "proxy.scrapeops.io", "icanhazip.com"]
 
     myBaseUrl = ''
     start_urls = []
