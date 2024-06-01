@@ -21,7 +21,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
     networks:
       - crawler-network
 
@@ -54,13 +54,14 @@ services:
     image: ${DOCKER_REGISTRY-}crawler
     container_name: crawler
     ports:
-      - 5000:5000
+      - "5000:5000"
     depends_on:
       - postgresDb
       - torproxy
     environment:
       - http_proxy=http://polipo:8181
       - https_proxy=http://polipo:8181
+      - SECRET_KEY=this_is_our_little_secret
     build:
       context: .
       dockerfile: ./Dockerfile
