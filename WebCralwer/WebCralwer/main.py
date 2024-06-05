@@ -280,12 +280,6 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
         return []
 
 
-# Request body
-crawl_request_body = api.model('CrawlRequest', {
-    'url': fields.String(required=True, description='The URL to crawl')
-})
-
-
 @api.route("/crawl-torob")
 class CrawlTorob(Resource):
     def __init__(self, *args, **kwargs):
@@ -299,7 +293,7 @@ class CrawlTorob(Resource):
         self.number_of_items += 1
 
     @crochet.run_in_reactor
-    def crawl_torob_with_crochet(self, base_url):
+    def crawl_torob_with_crochet(self):
         try:
             # Initialize the crawler object
             print("********************** crochet ... **********************")
@@ -308,7 +302,7 @@ class CrawlTorob(Resource):
             # Set a callback for when the crawl is finished
             self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
             # Start crawling
-            self.crawl_deferred = self.crawler.crawl(url=base_url)
+            self.crawl_deferred = self.crawler.crawl()
             self.crawl_deferred.addCallback(self.finished_crawling)
         except Exception as e:
             print("An error occurred in crawl_torob_with_crochet:", e)
@@ -320,26 +314,21 @@ class CrawlTorob(Resource):
         if self.crawler:
             self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
 
-    @api.expect(crawl_request_body)
     @token_required
     def post(self):
         try:
-            data = request.get_json()
-            base_url = data.get('url')
 
-            if base_url:
-                # Start the crawl
-                self.crawl_torob_with_crochet(base_url)
+            # Start the crawl
+            self.crawl_torob_with_crochet()
 
-                while not self.crawl_complete:
-                    print("********************** Crawling ... **********************")
-                    time.sleep(5)
-                    if self.crawl_complete:
-                        break
+            while not self.crawl_complete:
+                print("********************** Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
 
-                return 'Crawling operation finished.', 200
-            else:
-                return 'URL parameter is missing.', 400
+            return 'Crawling operation finished.', 200
+
         except Exception as e:
             return {
                 "error": "Something went wrong",
