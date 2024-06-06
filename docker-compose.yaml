@@ -26,24 +26,24 @@ services:
       - crawler-network
 
 
-  torproxy:
-    image: dperson/torproxy
-    container_name: torproxy
-    restart: always
-    ports:
-      - "9050:9050"
-      - "9051:9051"
-    networks:
-      - crawler-network
-    deploy:
-      restart_policy:
-        condition: on-failure
+#  torproxy:
+#    image: dperson/torproxy
+#    container_name: torproxy
+#    restart: always
+#    ports:
+#      - "9050:9050"
+#      - "9051:9051"
+#    networks:
+#      - crawler-network
+#    deploy:
+#      restart_policy:
+#        condition: on-failure
 
 
   polipo:
     image: 'clue/polipo'
     container_name: polipo
-    command: proxyAddress=0.0.0.0 proxyPort=8181 socksParentProxy=torproxy:9050
+    command: proxyAddress=0.0.0.0 proxyPort=8181 socksParentProxy=5.34.205.130:9050
     deploy:
       restart_policy:
         condition: on-failure
