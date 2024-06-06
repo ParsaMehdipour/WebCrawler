@@ -38,14 +38,53 @@ class TorobSpider(scrapy.Spider):
     allowed_domains = ["api.torob.com", "proxy.scrapeops.io", "icanhazip.com"]
 
     myBaseUrl = ''
-    start_urls = []
+    start_urls = [
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=10&category=94&category_name=%DA%AF%D9%88%D8%B4%DB%8C-%D9%85%D9%88%D8%A8%D8%A7%DB%8C%D9%84-mobile&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66606f82d64bebbac440c734&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=10&category=95&category_name=%D8%AA%D8%A8%D9%84%D8%AA-tablet&source=next_desktop&rank_offset=24&_bt__experiment=&suid=6660720269ecceb34e8c9f65&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=97&category_name=%D9%87%D8%AF%D9%81%D9%88%D9%86-%D9%87%D8%AF%D8%B3%D8%AA-%D9%88-%D9%87%D9%86%D8%AF%D8%B2%D9%81%D8%B1%DB%8C-headphone-and-headset&source=next_desktop&rank_offset=24&_bt__experiment=&suid=666067ca1204d5d876c29bba&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1460&category_name=%D8%B4%D8%A7%D8%B1%DA%98%D8%B1&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608a1338824c8929c63b58&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1007&category_name=%DA%A9%D8%A7%D8%A8%D9%84-%D9%88-%D8%AA%D8%A8%D8%AF%DB%8C%D9%84&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608a34bf45a3c7f360a314&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=760&category_name=%D9%BE%D8%A7%DB%8C%D9%87-%D9%86%DA%AF%D9%87%D8%AF%D8%A7%D8%B1%D9%86%D8%AF%D9%87-%DA%AF%D9%88%D8%B4%DB%8C-%D9%88-%D8%AA%D8%A8%D9%84%D8%AA&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608a4fcb27f2f5942a370a&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=366&category_name=%D9%85%D9%88%D9%86%D9%88%D9%BE%D8%A7%D8%AF-%D9%88-%DA%AF%DB%8C%D9%85%D8%A8%D8%A7%D9%84-%D9%85%D9%88%D8%A8%D8%A7%DB%8C%D9%84-monopod&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608a7603f08311ae71bba2&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=369&category_name=%D9%BE%D8%A7%D9%88%D8%B1%D8%A8%D8%A7%D9%86%DA%A9-%D9%88-%D8%B4%D8%A7%D8%B1%DA%98%D8%B1-%D9%87%D9%85%D8%B1%D8%A7%D9%87-powerbank&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608a8cbddead49eff5d0fa&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=282&category_name=%D8%B3%D8%A7%D8%B9%D8%AA-%D9%88-%D9%85%DA%86-%D8%A8%D9%86%D8%AF-%D9%87%D9%88%D8%B4%D9%85%D9%86%D8%AF-smart-watch&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608aa285243f8e2e7bcde8&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=99&category_name=%D9%84%D9%BE-%D8%AA%D8%A7%D9%BE-%D9%88-%D9%86%D9%88%D8%AA-%D8%A8%D9%88%DA%A9-laptop&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608ac02bd8d60d0fc66f11&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=230&category_name=%D9%85%D8%A7%D9%86%DB%8C%D8%AA%D9%88%D8%B1-monitor&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608a3110d2eb042df38e4d&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=231&category_name=%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-%D9%87%D8%A7%DB%8C-all-in-one-all-in-one&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608af60b95b3c24c452c6d&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=232&category_name=%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-%D8%AF%D8%B3%DA%A9%D8%AA%D8%A7%D9%BE-others-monitor&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608b1780a05ab48bb2549c&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=970&category_name=%D9%85%DB%8C%D9%86%DB%8C-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608b3f0c3cfc9755a134a1&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=519&category_name=%D9%BE%D8%B1%D8%AF%D8%A7%D8%B2%D9%86%D8%AF%D9%87-cpu&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608b5423e65b6f8f615332&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=520&category_name=%D9%85%D8%A7%D8%AF%D8%B1%D8%A8%D9%88%D8%B1%D8%AF-computer-moderboard&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608b674e92b9c25e4e9577&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=522&category_name=%DA%A9%D8%A7%D8%B1%D8%AA-%DA%AF%D8%B1%D8%A7%D9%81%DB%8C%DA%A9-graphic-card&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608b992ce6ea5342efd92f&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=518&category_name=%D8%B1%D9%85-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-computer-ram&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608bb5ea576b44cb7f1075&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=523&category_name=%D8%B1%D9%85-%D9%84%D9%BE-%D8%AA%D8%A7%D9%BE-laptop-ram&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608bd3739a9457446a6de5&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1866&category_name=%D8%B1%D9%85-%D8%B3%D8%B1%D9%88%D8%B1&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608bf9ee48bf2ca8ec4549&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=521&category_name=%D9%BE%D8%A7%D9%88%D8%B1-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-computer-power&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608c11f78fd2158ab0cb49&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1013&category_name=%DA%A9%D8%A7%D8%B1%D8%AA-%D8%B5%D8%AF%D8%A7-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-computer-sound-card&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608c5f2bd8d60d0fc67254&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=233&category_name=%DA%A9%DB%8C%D8%A8%D9%88%D8%B1%D8%AF-keyboard&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608870d173f37eb2d04b73&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=234&category_name=%D9%85%D8%A7%D9%88%D8%B3-mouse&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608c85d9bd7a869fa48221&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=242&category_name=%D8%B3%D8%AA-%D9%85%D8%A7%D9%88%D8%B3-%D9%88-%DA%A9%DB%8C%D8%A8%D9%88%D8%B1%D8%AF-mouse-and-keyboard&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608c9f287106ba976637cf&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=239&category_name=%DA%A9%DB%8C%D8%B3-%DA%A9%D8%A7%D9%85%D9%BE%DB%8C%D9%88%D8%AA%D8%B1-case&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608ab964b45e5a74468acd&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=983&category_name=%D9%81%D9%86-%DA%A9%DB%8C%D8%B3&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608cd5f6a5a10a25ce4ac4&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1011&category_name=%D9%87%D8%A7%D8%A8-usb&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608cf0727290ef1833165a&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=939&category_name=%D9%BE%D8%B1%DB%8C%D9%86%D8%AA%D8%B1-%D8%B3%D9%87-%D8%A8%D8%B9%D8%AF%DB%8C-%D9%88-%D9%84%D9%88%D8%A7%D8%B2%D9%85-%D8%AC%D8%A7%D9%86%D8%A8%DB%8C&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608d09167806859caa0d1a&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1246&category_name=%D9%85%D9%88%D8%AF%D9%85-adsl-vdsl&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608d2312ce57544255742e&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1247&category_name=%D9%85%D9%88%D8%AF%D9%85-lte-3g-4g-5g&source=next_desktop&rank_offset=24&_bt__experiment=&suid=6660892c78a318bc11bc2b3d&_url_referrer=',
+        'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1253&category_name=%D9%85%D9%88%D8%AF%D9%85-%D9%81%DB%8C%D8%A8%D8%B1-%D9%86%D9%88%D8%B1%DB%8C-%D9%88-%D9%85%D8%AE%D8%A7%D8%A8%D8%B1%D8%A7%D8%AA%DB%8C&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608c8e2bd8d60d0fc672a5&_url_referrer='
+        ]
 
     def __init__(self, url='', **kwargs):  # The category variable will have the input URL.
         print("************************* Entered Spider -> url : ", url)
         # set custom settings
         self.myBaseUrl = url
-        self.start_urls.append(self.myBaseUrl)
+        # self.start_urls.append(self.myBaseUrl)
         super().__init__(**kwargs)
+
+        # if len(self.start_urls) > 0:
+        #     self.start_urls.clear()
+
+        # with open('startUrls.txt') as my_file:
+        #     self.start_urls = [line.strip() for line in my_file.readlines()]
 
     API_KEY = '6b98e85e-ad38-466b-806b-7c8511be9d5e'
 
@@ -67,7 +106,8 @@ class TorobSpider(scrapy.Spider):
         yield scrapy.Request(url=ip_check_url, callback=self.parse_ip)
         # yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
         print("********************** Passed Urls till now : ", self.start_urls)
-        yield scrapy.Request(url=self.start_urls[-1], callback=self.parse)
+        for url in self.start_urls:
+            yield scrapy.Request(url=url, callback=self.parse)
 
     # Check the IP
     def parse_ip(self, response):
