@@ -38,6 +38,12 @@ services:
     deploy:
       restart_policy:
         condition: on-failure
+    environment:
+      - TOR_LOG_LEVEL=notice
+    command: >
+      tor -f /etc/tor/torrc
+    volumes:
+      - ./torrc:/etc/tor/torrc
 
 
   polipo:
