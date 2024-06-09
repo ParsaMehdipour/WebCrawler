@@ -296,7 +296,7 @@ class InsetIntoDatabasePostgresPipeline:
                             if existing_brand is None:
                                 brand = DatabaseBrand(
                                     id=brand_id,
-                                    title=category['title'],
+                                    title=category.get('title', 'Empty'),
                                     created_on=datetime.now()
                                 )
                                 session.add(brand)
@@ -308,8 +308,8 @@ class InsetIntoDatabasePostgresPipeline:
                             if existing_category is None:
                                 database_category = DatabaseCategory(
                                     id=category['id'],
-                                    title=category['title'],
-                                    url=category['url'],
+                                    title=category.get('title', 'Empty'),
+                                    url=category.get('url', 'Empty'),
                                     brand_id=None,
                                     created_on=datetime.now()
                                 )
@@ -317,20 +317,20 @@ class InsetIntoDatabasePostgresPipeline:
                                 session.commit()
                             category_name = category_name + category['title'] + " - "
 
-                print("********************** Product item:", item['id'], item['name1'], item['name2'])
+                print("********************** Product item:", item['id'], item['name1'], item.get('name2', 'Empty'))
                 product_id = item['id']
                 existing_product = session.query(DatabaseProduct).filter_by(id=product_id).first()
                 if existing_product is None:
                     product = DatabaseProduct(
                         id=item['id'],
-                        image_url=item['image_url'],
-                        name1=item['name1'],
-                        name2=item['name2'],
+                        image_url=item.get('image_url', 'Empty'),
+                        name1=item.get('name1', 'Empty'),
+                        name2=item.get('name2', 'Empty'),
                         more_info_url=item['more_info_url'],
-                        price=item['price'],
-                        price_text=item['price_text'],
-                        shop_text=item['shop_text'],
-                        is_stock=item['is_stock'],
+                        price=item.get('price', 'Empty'),
+                        price_text=item.get('price_text', 'Empty'),
+                        shop_text=item.get('shop_text', 'Empty'),
+                        is_stock=item.get('is_stock', 'Empty'),
                         category_name=category_name,
                         brand_name=brand_name,
                         created_on=datetime.now()
@@ -354,7 +354,7 @@ class InsetIntoDatabasePostgresPipeline:
                             if existing_seller is None:
                                 seller = DatabaseSeller(
                                     id=seller['id'],
-                                    name=seller['name'],
+                                    name=seller.get('name', 'Empty'),
                                     city=seller.get('city', 'Empty'),
                                     created_on=datetime.now()
                                 )
