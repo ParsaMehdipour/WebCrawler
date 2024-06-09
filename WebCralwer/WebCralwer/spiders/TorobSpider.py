@@ -76,7 +76,7 @@ class TorobSpider(scrapy.Spider):
         'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1246&category_name=%D9%85%D9%88%D8%AF%D9%85-adsl-vdsl&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608d2312ce57544255742e&_url_referrer=',
         'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1247&category_name=%D9%85%D9%88%D8%AF%D9%85-lte-3g-4g-5g&source=next_desktop&rank_offset=24&_bt__experiment=&suid=6660892c78a318bc11bc2b3d&_url_referrer=',
         'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1253&category_name=%D9%85%D9%88%D8%AF%D9%85-%D9%81%DB%8C%D8%A8%D8%B1-%D9%86%D9%88%D8%B1%DB%8C-%D9%88-%D9%85%D8%AE%D8%A7%D8%A8%D8%B1%D8%A7%D8%AA%DB%8C&source=next_desktop&rank_offset=24&_bt__experiment=&suid=66608c8e2bd8d60d0fc672a5&_url_referrer='
-        ]
+    ]
 
     def __init__(self, url='', **kwargs):  # The category variable will have the input URL.
         print("************************* Entered Spider -> url : ", url)
@@ -133,14 +133,13 @@ class TorobSpider(scrapy.Spider):
 
         # Response contains a field with the name of 'next' which is the url of the next page in our pagination,
         # when it does not exist means that there are no next pages
-        # next_page = json_res['next']
-        # if next_page is not None:
-        #     print("************************ next_page : ", next_page)
-        #     # Send an api call to the next page
-        #     yield response.follow(url=self.get_proxy_url(next_page), callback=self.parse, errback=self.handle_error)
+        next_page = json_res['next']
+        if next_page is not None:
+            print("************************ next_page : ", next_page)
+            # Send an api call to the next page
+            yield response.follow(url=next_page, callback=self.parse, errback=self.handle_error)
 
-        # Parses the response into our structured data
-
+    # Parses the response into our structured data
     @staticmethod
     def parse_product_page(response, product_id):
         # Load product details
