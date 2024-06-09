@@ -12,12 +12,17 @@ class TorobSpider(scrapy.Spider):
 
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
+        'DOWNLOAD_DELAY': 1,
+        'AUTOTHROTTLE_ENABLED': True,  # Enable AutoThrottle
+        'AUTOTHROTTLE_START_DELAY': 1,  # Initial delay for AutoThrottle
+        'AUTOTHROTTLE_MAX_DELAY': 3,  # Maximum delay for AutoThrottle
+        'AUTOTHROTTLE_TARGET_CONCURRENCY': 1.0,  # Target concurrency
+        'AUTOTHROTTLE_DEBUG': False,
         'SCRAPEOPS_API_KEY': 'e79c3418-3c44-471b-9d10-7edaca2fad6a',
         'SCRAPEOPS_FAKE_USER_AGENT_ENDPOINT': 'https://headers.scrapeops.io/v1/user-agents',
         'SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT': 'http://headers.scrapeops.io/v1/browser-headers',
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
-        'DOWNLOAD_DELAY': 1,
         'DOWNLOADER_MIDDLEWARES': {
             'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1,
             'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
