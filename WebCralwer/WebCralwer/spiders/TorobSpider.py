@@ -17,7 +17,7 @@ class TorobSpider(scrapy.Spider):
         'SCRAPEOPS_FAKE_BROWSER_HEADER_ENDPOINT': 'http://headers.scrapeops.io/v1/browser-headers',
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
-        'DOWNLOAD_DELAY': 2,
+        'DOWNLOAD_DELAY': 1,
         'DOWNLOADER_MIDDLEWARES': {
             'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1,
             'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
@@ -88,16 +88,6 @@ class TorobSpider(scrapy.Spider):
 
     API_KEY = '6b98e85e-ad38-466b-806b-7c8511be9d5e'
 
-    # Get proxy url from ScrapeOps proxy aggregator
-    def get_proxy_url(self, url):
-        print("************************* Getting proxy ... **********************")
-        # Load the api key
-        payload = {'api_key': self.API_KEY, 'url': url}
-        # ScrapeOps url
-        proxy_url = 'https://proxy.scrapeops.io/v1/?' + urlencode(payload)
-        print("************************* Proxy url : ", proxy_url)
-        return proxy_url
-
     # Start requests
     def start_requests(self):
         print("********************** Starting requests ...")
@@ -118,7 +108,6 @@ class TorobSpider(scrapy.Spider):
     # Parse the response
     def parse(self, response, **kwargs):
         json_res = json.loads(response.text)
-        ip_check_url = 'https://icanhazip.com/'
         print("********************** Is proxy in response.meta?: ", response.meta)
 
         data = json_res['results']
@@ -134,9 +123,6 @@ class TorobSpider(scrapy.Spider):
 
             print("********************** product_id : ", product_id)
             # Send api call to the more info url
-            # yield scrapy.Request(url=self.get_proxy_url(more_info_url), callback=self.parse_product_page,
-            #                      cb_kwargs={'product_id': product_id})
-            yield scrapy.Request(url=ip_check_url, callback=self.parse_ip, meta={'response': response})
             yield response.follow(url=more_info_url, callback=self.parse_product_page,
                                   cb_kwargs={'product_id': product_id})
 
