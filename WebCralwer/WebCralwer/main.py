@@ -1,35 +1,76 @@
-import crochet
+# OS
+import os
 import time
-import scrapy
-import sys
-# Scrapy
-from scrapy import signals
-from scrapy.signalmanager import dispatcher
-from scrapy.crawler import Crawler, CrawlerRunner
-from scrapy.settings import Settings
-from scrapy.utils.log import configure_logging
-from scrapy.utils.project import get_project_settings
+# Datetime
+from datetime import datetime, timedelta
+# Func tools
+from functools import wraps
+# Crochet
+import crochet
+# JWT
+import jwt
+# Log
+# Database
+import psycopg2
 # Flask
 from flask import Flask, jsonify, request, abort, current_app
 from flask_restx import Api, Resource, fields, reqparse
-# Torob crawler
-import settings as torob_settings, pipelines, middlewares
-from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
-from spiders import TorobSpider
-# Log
-from twisted.python import log
-# Database
-import psycopg2
-# Datetime
-from datetime import datetime, timedelta
 # SQL Alchemy
 from flask_sqlalchemy import SQLAlchemy
-# Func tools
-from functools import wraps
-# JWT
-import jwt
-# OS
-import os
+# Scrapy
+from scrapy import signals
+from scrapy.crawler import Crawler
+from scrapy.utils.log import configure_logging
+from scrapy.utils.project import get_project_settings
+# Torob crawler
+from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
+from spiders import (TorobSpider_Phone,
+                     TorobSpider_Tablet,
+                     TorobSpider_Headphone,
+                     TorobSpider_Charger,
+                     TorobSpider_Cable,
+                     TorobSpider_PhoneTabletHolder,
+                     TorobSpider_MonoPod,
+                     TorobSpider_PowerBank,
+                     TorobSpider_SmartWatch,
+                     TorobSpider_LaptopNotebook,
+                     TorobSpider_Monitor,
+                     TorobSpider_AllInOne,
+                     TorobSpider_Desktop,
+                     TorobSpider_MiniComputer,
+                     TorobSpider_CPU,
+                     TorobSpider_Motherboard,
+                     TorobSpider_GraphicCard,
+                     TorobSpider_ComputerRAM,
+                     TorobSpider_LaptopRAM,
+                     TorobSpider_ServerRAM,
+                     TorobSpider_ComputerPower,
+                     TorobSpider_ComputerSoundCard,
+                     TorobSpider_Keyboard,
+                     TorobSpider_Mouse,
+                     TorobSpider_MouseAndKeyboard,
+                     TorobSpider_ComputerCase,
+                     TorobSpider_CaseFan,
+                     TorobSpider_Hub,
+                     TorobSpider_3DPrinterAndEssentials,
+                     TorobSpider_AdslVdsl,
+                     TorobSpider_Lte3G4G5G,
+                     TorobSpider_FiberOpticModem,
+                     TorobSpider_Router,
+                     TorobSpider_AccessPoint,
+                     TorobSpider_NetworkCard,
+                     TorobSpider_Switch,
+                     TorobSpider_NetworkCable,
+                     TorobSpider_NetworkMemoryAndStorage,
+                     TorobSpider_Server,
+                     TorobSpider_ExternalHardDrive,
+                     TorobSpider_InternalHardDrive,
+                     TorobSpider_SSDHardDrive,
+                     TorobSpider_ServerHardDrive,
+                     TorobSpider_FlashMemory,
+                     TorobSpider_MemoryCard,
+                     TorobSpider_NetworkAndSecurityCamera,
+                     TorobSpider_Recorder)
 
 # setting up crochet to execute
 crochet.setup()
@@ -280,8 +321,8 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
         return []
 
 
-@api.route("/crawl-torob")
-class CrawlTorob(Resource):
+@api.route("/crawl-torob-phone")
+class CrawlTorob_Phone(Resource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.crawl_complete, self.number_of_items = False, 0
@@ -296,8 +337,8 @@ class CrawlTorob(Resource):
     def crawl_torob_with_crochet(self):
         try:
             # Initialize the crawler object
-            print("********************** crochet ... **********************")
-            self.crawler = Crawler(TorobSpider.TorobSpider, get_project_settings())
+            print("********************** crawl-torob-phone: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Phone.TorobSpider_Phone, get_project_settings())
             self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
             # Set a callback for when the crawl is finished
             self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
@@ -305,10 +346,10 @@ class CrawlTorob(Resource):
             self.crawl_deferred = self.crawler.crawl()
             self.crawl_deferred.addCallback(self.finished_crawling)
         except Exception as e:
-            print("An error occurred in crawl_torob_with_crochet:", e)
+            print("crawl-torob-phone: An error occurred in crawl_torob_with_crochet:", e)
 
     def finished_crawling(self, *args, **kwargs):
-        print("********************** Finished crawling **********************")
+        print("********************** crawl-torob-phone: Finished crawling **********************")
         self.crawl_complete = True
         # Disconnect signals when finished crawling
         if self.crawler:
@@ -322,7 +363,2588 @@ class CrawlTorob(Resource):
             self.crawl_torob_with_crochet()
 
             while not self.crawl_complete:
-                print("********************** Crawling ... **********************")
+                print("********************** crawl-torob-phone: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-tablet")
+class CrawlTorob_Tablet(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-tablet: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Tablet.TorobSpider_Tablet, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-tablet: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-tablet: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-tablet: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-headphone")
+class CrawlTorob_Headphone(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-headphone: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Headphone.TorobSpider_Headphone, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-headphone: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-headphone: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-headphone: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-charger")
+class CrawlTorob_Charger(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-charger: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Charger.TorobSpider_Charger, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-charger: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-charger: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-charger: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-cable")
+class CrawlTorob_Charger(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-cable: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Cable.TorobSpider_Cable, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-cable: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-cable: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-cable: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-phonetabletholder")
+class CrawlTorob_PhoneTabletHolder(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-phonetabletholder: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_PhoneTabletHolder.TorobSpider_PhoneTabletHolder, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-phonetabletholder: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-phonetabletholder: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-phonetabletholder: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-monopod")
+class CrawlTorob_MonoPod(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-monopod: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_MonoPod.TorobSpider_MonoPod, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-monopod: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-monopod: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-monopod: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-powerbank")
+class CrawlTorob_PowerBank(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-powerbank: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_PowerBank.TorobSpider_PowerBank, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-powerbank: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-powerbank: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-powerbank: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-smartwatch")
+class CrawlTorob_SmartWatch(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-smartwatch: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_SmartWatch.TorobSpider_SmartWatch, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-smartwatch: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-smartwatch: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-smartwatch: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-laptopnotebook")
+class CrawlTorob_LaptopNotebook(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-laptopnotebook: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_LaptopNotebook.TorobSpider_LaptopNotebook, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-laptopnotebook: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-laptopnotebook: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-laptopnotebook: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-monitor")
+class CrawlTorob_Monitor(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-monitor: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Monitor.TorobSpider_Monitor, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-monitor: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-monitor: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-monitor: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-allinone")
+class CrawlTorob_AllInOne(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-allinone: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_AllInOne.TorobSpider_AllInOne, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-allinone: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-allinone: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-allinone: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-desktop")
+class CrawlTorob_Desktop(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-desktop: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Desktop.TorobSpider_Desktop, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-desktop: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-desktop: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-desktop: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-minicomputer")
+class CrawlTorob_MiniComputer(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-minicomputer: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_MiniComputer.TorobSpider_MiniComputer, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-minicomputer: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-minicomputer: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-minicomputer: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-cpu")
+class CrawlTorob_CPU(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-cpu: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_CPU.TorobSpider_CPU, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-cpu: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-cpu: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-cpu: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-motherboard")
+class CrawlTorob_Motherboard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-motherboard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Motherboard.TorobSpider_Motherboard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-motherboard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-motherboard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-motherboard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-graphiccard")
+class CrawlTorob_GraphicCard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-graphiccard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_GraphicCard.TorobSpider_GraphicCard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-graphiccard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-graphiccard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-graphiccard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-computerram")
+class CrawlTorob_ComputerRAM(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-computerram: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ComputerRAM.TorobSpider_ComputerRAM, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-computerram: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-computerram: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-computerram: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-laptopram")
+class CrawlTorob_LaptopRAM(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-laptopram: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_LaptopRAM.TorobSpider_LaptopRAM, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-laptopram: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-laptopram: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-laptopram: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-serverram")
+class CrawlTorob_ServerRAM(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-serverram: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ServerRAM.TorobSpider_ServerRAM, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-serverram: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-serverram: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-serverram: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-computerpower")
+class CrawlTorob_ComputerPower(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-computerpower: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ComputerPower.TorobSpider_ComputerPower, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-computerpower: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-computerpower: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-computerpower: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-computersoundcard")
+class CrawlTorob_ComputerSoundCard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-computersoundcard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ComputerSoundCard.TorobSpider_ComputerSoundCard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-computersoundcard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-computersoundcard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-computersoundcard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-keyboard")
+class CrawlTorob_Keyboard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-keyboard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Keyboard.TorobSpider_Keyboard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-keyboard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-keyboard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-keyboard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-mouse")
+class CrawlTorob_Mouse(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-mouse: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Mouse.TorobSpider_Mouse, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-mouse: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-mouse: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-mouse: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-mouseandkeyboard")
+class CrawlTorob_MouseAndKeyboard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-mouseandkeyboard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_MouseAndKeyboard.TorobSpider_MouseAndKeyboard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-mouseandkeyboard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-mouseandkeyboard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-mouseandkeyboard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-computercase")
+class CrawlTorob_ComputerCase(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-computercase: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ComputerCase.TorobSpider_ComputerCase, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-computercase: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-computercase: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-computercase: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-casefan")
+class CrawlTorob_CaseFan(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-casefan: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_CaseFan.TorobSpider_CaseFan, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-casefan: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-casefan: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-casefan: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-hub")
+class CrawlTorob_Hub(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-hub: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Hub.TorobSpider_Hub, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-hub: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-hub: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-hub: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-3dprinterandessentials")
+class CrawlTorob_3DPrinterAndEssentials(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-3dprinterandessentials: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_3DPrinterAndEssentials.TorobSpider_3DPrinterAndEssentials,
+                                   get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-3dprinterandessentials: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-3dprinterandessentials: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-3dprinterandessentials: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-adslvdsl")
+class CrawlTorob_AdslVdsl(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-adslvdsl: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_AdslVdsl.TorobSpider_AdslVdsl, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-adslvdsl: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-adslvdsl: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-adslvdsl: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-lte3g4g5g")
+class CrawlTorob_Lte3G4G5G(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-lte3g4g5g: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Lte3G4G5G.TorobSpider_Lte3G4G5G, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-lte3g4g5g: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-lte3g4g5g: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-lte3g4g5g: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-fiberopticmodem")
+class CrawlTorob_FiberOpticModem(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-fiberopticmodem: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_FiberOpticModem.TorobSpider_FiberOpticModem, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-fiberopticmodem: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-fiberopticmodem: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-fiberopticmodem: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-router")
+class CrawlTorob_Router(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-router: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Router.TorobSpider_Router, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-router: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-router: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-router: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-accesspoint")
+class CrawlTorob_AccessPoint(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-accesspoint: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_AccessPoint.TorobSpider_AccessPoint, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-accesspoint: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-accesspoint: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-accesspoint: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-networkcard")
+class CrawlTorob_NetworkCard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-networkcard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_NetworkCard.TorobSpider_NetworkCard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-networkcard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-networkcard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-networkcard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-switch")
+class CrawlTorob_Switch(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-switch: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Switch.TorobSpider_Switch, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-switch: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-switch: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-switch: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-networkcable")
+class CrawlTorob_NetworkCable(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-networkcable: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_NetworkCable.TorobSpider_NetworkCable, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-networkcable: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-networkcable: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-networkcable: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-networkmemoryandstorage")
+class CrawlTorob_NetworkMemoryAndStorage(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-networkmemoryandstorage: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_NetworkMemoryAndStorage.TorobSpider_NetworkMemoryAndStorage,
+                                   get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-networkmemoryandstorage: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-networkmemoryandstorage: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-networkmemoryandstorage: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-server")
+class CrawlTorob_Server(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-server: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Server.TorobSpider_Server, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-server: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-server: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-server: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-externalharddrive")
+class CrawlTorob_ExternalHardDrive(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-externalharddrive: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ExternalHardDrive.TorobSpider_ExternalHardDrive, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-externalharddrive: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-externalharddrive: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-externalharddrive: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-internalharddrive")
+class CrawlTorob_InternalHardDrive(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-internalharddrive: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_InternalHardDrive.TorobSpider_InternalHardDrive, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-internalharddrive: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-internalharddrive: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-internalharddrive: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-ssdharddrive")
+class CrawlTorob_SSDHardDrive(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-ssdharddrive: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_SSDHardDrive.TorobSpider_SSDHardDrive, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-ssdharddrive: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-ssdharddrive: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-ssdharddrive: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-serverharddrive")
+class CrawlTorob_ServerHardDrive(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-serverharddrive: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_ServerHardDrive.TorobSpider_ServerHardDrive, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-serverharddrive: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-serverharddrive: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-serverharddrive: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-flashmemory")
+class CrawlTorob_FlashMemory(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-flashmemory: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_FlashMemory.TorobSpider_FlashMemory, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-flashmemory: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-flashmemory: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-flashmemory: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-memorycard")
+class CrawlTorob_MemoryCard(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-memorycard: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_MemoryCard.TorobSpider_MemoryCard, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-memorycard: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-memorycard: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print("********************** crawl-torob-memorycard: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-networkandsecuritycamera")
+class CrawlTorob_NetworkAndSecurityCamera(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-networkandsecuritycamera: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_NetworkAndSecurityCamera.TorobSpider_NetworkAndSecurityCamera,
+                                   get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-networkandsecuritycamera: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-networkandsecuritycamera: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print(
+                    "********************** crawl-torob-networkandsecuritycamera: Crawling ... **********************")
+                time.sleep(5)
+                if self.crawl_complete:
+                    break
+
+            return 'Crawling operation finished.', 200
+
+        except Exception as e:
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
+
+
+@api.route("/crawl-torob-recorder")
+class CrawlTorob_Recorder(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.crawl_complete, self.number_of_items = False, 0
+        self.crawler = None  # Initialize crawler object
+        self.crawl_deferred = None  # Initialize crawl deferred
+
+    def crawler_result(self, item, response, spider):
+        # Count extracted products
+        self.number_of_items += 1
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self):
+        try:
+            # Initialize the crawler object
+            print("********************** crawl-torob-recorder: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_Recorder.TorobSpider_Recorder, get_project_settings())
+            self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            # Set a callback for when the crawl is finished
+            self.crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            # Start crawling
+            self.crawl_deferred = self.crawler.crawl()
+            self.crawl_deferred.addCallback(self.finished_crawling)
+        except Exception as e:
+            print("crawl-torob-recorder: An error occurred in crawl_torob_with_crochet:", e)
+
+    def finished_crawling(self, *args, **kwargs):
+        print("********************** crawl-torob-recorder: Finished crawling **********************")
+        self.crawl_complete = True
+        # Disconnect signals when finished crawling
+        if self.crawler:
+            self.crawler.signals.disconnect(self.crawler_result, signal=signals.item_scraped)
+
+    @token_required
+    def post(self):
+        try:
+
+            # Start the crawl
+            self.crawl_torob_with_crochet()
+
+            while not self.crawl_complete:
+                print(
+                    "********************** crawl-torob-recorder: Crawling ... **********************")
                 time.sleep(5)
                 if self.crawl_complete:
                     break
@@ -505,4 +3127,4 @@ class UserLogin(Resource):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False)
