@@ -1,6 +1,10 @@
 # OS
 import os
 import time
+# Concurrent
+import concurrent.futures
+# Threading
+import threading
 # Datetime
 from datetime import datetime, timedelta
 # Func tools
@@ -319,6 +323,114 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
         print(f"Database error occurred: {e}")
         con.rollback()
         return []
+
+
+@api.route("/crawl-torob-all")
+class CrawlTorobAll(Resource):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=50)
+        self.spider_status = {}
+        self.spider_counts = {}
+        self.lock = threading.Lock()  # Correct use of Lock
+
+    def crawler_result(self, item, response, spider):
+        with self.lock:
+            self.spider_counts[spider.name] += 1
+            print(f"Item scraped by {spider.name}: {self.spider_counts[spider.name]}")
+
+    @crochet.run_in_reactor
+    def crawl_torob_with_crochet(self, spider_cls):
+        try:
+            print(f"********************** Starting crawl: {spider_cls.name} **********************")
+            crawler = Crawler(spider_cls, get_project_settings())
+            with self.lock:
+                self.spider_counts[spider_cls.name] = 0
+                self.spider_status[spider_cls.name] = False
+            crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
+            crawler.signals.connect(self.finished_crawling, signal=signals.spider_closed)
+            crawler.crawl()
+        except Exception as e:
+            print(f"An error occurred in crawl_torob_with_crochet for {spider_cls.name}: {e}")
+
+    def finished_crawling(self, spider, reason):
+        print(f"********************** Finished crawling: {spider.name} **********************")
+        with self.lock:
+            self.spider_status[spider.name] = True
+
+    @token_required
+    def post(self):
+        try:
+            spiders_to_run = [
+                TorobSpider_Phone.TorobSpider_Phone,
+                TorobSpider_Tablet.TorobSpider_Tablet,
+                TorobSpider_Headphone.TorobSpider_Headphone,
+                TorobSpider_Charger.TorobSpider_Charger,
+                TorobSpider_Cable.TorobSpider_Cable,
+                TorobSpider_PhoneTabletHolder.TorobSpider_PhoneTabletHolder,
+                TorobSpider_MonoPod.TorobSpider_MonoPod,
+                TorobSpider_PowerBank.TorobSpider_PowerBank,
+                TorobSpider_SmartWatch.TorobSpider_SmartWatch,
+                TorobSpider_LaptopNotebook.TorobSpider_LaptopNotebook,
+                TorobSpider_Monitor.TorobSpider_Monitor,
+                TorobSpider_AllInOne.TorobSpider_AllInOne,
+                TorobSpider_Desktop.TorobSpider_Desktop,
+                TorobSpider_MiniComputer.TorobSpider_MiniComputer,
+                TorobSpider_CPU.TorobSpider_CPU,
+                TorobSpider_Motherboard.TorobSpider_Motherboard,
+                TorobSpider_GraphicCard.TorobSpider_GraphicCard,
+                TorobSpider_ComputerRAM.TorobSpider_ComputerRAM,
+                TorobSpider_LaptopRAM.TorobSpider_LaptopRAM,
+                TorobSpider_ServerRAM.TorobSpider_ServerRAM,
+                TorobSpider_ComputerPower.TorobSpider_ComputerPower,
+                TorobSpider_ComputerSoundCard.TorobSpider_ComputerSoundCard,
+                TorobSpider_Keyboard.TorobSpider_Keyboard,
+                TorobSpider_Mouse.TorobSpider_Mouse,
+                TorobSpider_MouseAndKeyboard.TorobSpider_MouseAndKeyboard,
+                TorobSpider_ComputerCase.TorobSpider_ComputerCase,
+                TorobSpider_CaseFan.TorobSpider_CaseFan,
+                TorobSpider_Hub.TorobSpider_Hub,
+                TorobSpider_3DPrinterAndEssentials.TorobSpider_3DPrinterAndEssentials,
+                TorobSpider_AdslVdsl.TorobSpider_AdslVdsl,
+                TorobSpider_Lte3G4G5G.TorobSpider_Lte3G4G5G,
+                TorobSpider_FiberOpticModem.TorobSpider_FiberOpticModem,
+                TorobSpider_Router.TorobSpider_Router,
+                TorobSpider_AccessPoint.TorobSpider_AccessPoint,
+                TorobSpider_NetworkCard.TorobSpider_NetworkCard,
+                TorobSpider_Switch.TorobSpider_Switch,
+                TorobSpider_NetworkCable.TorobSpider_NetworkCable,
+                TorobSpider_NetworkMemoryAndStorage.TorobSpider_NetworkMemoryAndStorage,
+                TorobSpider_Server.TorobSpider_Server,
+                TorobSpider_ExternalHardDrive.TorobSpider_ExternalHardDrive,
+                TorobSpider_InternalHardDrive.TorobSpider_InternalHardDrive,
+                TorobSpider_SSDHardDrive.TorobSpider_SSDHardDrive,
+                TorobSpider_ServerHardDrive.TorobSpider_ServerHardDrive,
+                TorobSpider_FlashMemory.TorobSpider_FlashMemory,
+                TorobSpider_MemoryCard.TorobSpider_MemoryCard,
+                TorobSpider_NetworkAndSecurityCamera.TorobSpider_NetworkAndSecurityCamera,
+                TorobSpider_Recorder.TorobSpider_Recorder
+            ]
+
+            futures = []
+
+            # Start the crawl for each spider in parallel
+            for spider_cls in spiders_to_run:
+                print(f"Submitting spider: {spider_cls.name}")
+                futures.append(self.executor.submit(self.crawl_torob_with_crochet, spider_cls))
+
+            while not all(self.spider_status.get(spider_cls.name, False) for spider_cls in spiders_to_run):
+                print("********************** Crawling in progress ... **********************")
+                time.sleep(5)
+
+            results = {spider_cls.name: self.spider_counts.get(spider_cls.name, 0) for spider_cls in spiders_to_run}
+            return jsonify({'message': 'Crawling operation finished.', 'results': results}), 200
+
+        except Exception as e:
+            print(f"An error occurred in post method: {e}")
+            return {
+                "error": "Something went wrong",
+                "message": str(e)
+            }, 500
 
 
 @api.route("/crawl-torob-phone")
