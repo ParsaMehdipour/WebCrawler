@@ -85,7 +85,7 @@ configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 # Searching database connection
 con = psycopg2.connect(
     host='postgresDb',
-    user='postgres',
+    user='docker',
     password='docker',
     database='crawler_db'
 )
@@ -96,7 +96,7 @@ cursor = con.cursor()
 # app , api
 app = Flask(__name__)
 # Flask database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:docker@postgresDb/crawler_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://docker:docker@postgresDb/crawler_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 SECRET_KEY = os.environ.get('SECRET_KEY') or 'this is our little secret'
 print("********************** Secret Key :", SECRET_KEY)
