@@ -397,7 +397,7 @@ class TaskCrawlTorobAll(Resource):
         logger.info("********************** Starting task ... **********************")
 
         scheduler = BackgroundScheduler()
-        scheduler.add_job(func=self.start_crawling, trigger="interval", seconds=10)
+        scheduler.add_job(func=self.start_crawling, trigger="interval", minutes=480)
         scheduler.start()
 
         # Shut down the scheduler when exiting the app
