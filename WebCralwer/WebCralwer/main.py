@@ -16,12 +16,12 @@ from functools import wraps
 import crochet
 # JWT
 import jwt
-# Log
 # Database
 import psycopg2
 # Flask
 from flask import Flask, jsonify, request, abort, current_app
 from flask_restx import Api, Resource, fields, reqparse
+from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 # SQL Alchemy
@@ -102,6 +102,9 @@ cursor = con.cursor()
 
 # app , api
 app = Flask(__name__)
+
+# enable CORS
+CORS(app)
 # Flask database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://docker:docker@postgresDb/crawler_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -2143,8 +2146,8 @@ class CrawlTorob_3DPrinterAndEssentials(Resource):
         try:
             # Initialize the crawler object
             logger.info(
-                "********************** crawl-torob-3dlogger.infoerandessentials: crochet ... **********************")
-            self.crawler = Crawler(TorobSpider_3Dlogger.infoerAndEssentials.TorobSpider_3Dlogger.infoerAndEssentials,
+                "********************** crawl-torob-3DPrinterAndEssentials: crochet ... **********************")
+            self.crawler = Crawler(TorobSpider_3DPrinterAndEssentials.TorobSpider_3DPrinterAndEssentials,
                                    get_project_settings())
             self.crawler.signals.connect(self.crawler_result, signal=signals.item_scraped)
             # Set a callback for when the crawl is finished
@@ -2153,11 +2156,11 @@ class CrawlTorob_3DPrinterAndEssentials(Resource):
             self.crawl_deferred = self.crawler.crawl()
             self.crawl_deferred.addCallback(self.finished_crawling)
         except Exception as e:
-            logger.info("crawl-torob-3dlogger.infoerandessentials: An error occurred in crawl_torob_with_crochet:", e)
+            logger.info("crawl-torob-3DPrinterAndEssentials: An error occurred in crawl_torob_with_crochet:", e)
 
     def finished_crawling(self, *args, **kwargs):
         logger.info(
-            "********************** crawl-torob-3dlogger.infoerandessentials: Finished crawling **********************")
+            "********************** crawl-torob-3DPrinterAndEssentials: Finished crawling **********************")
         self.crawl_complete = True
         # Disconnect signals when finished crawling
         if self.crawler:
@@ -2172,7 +2175,7 @@ class CrawlTorob_3DPrinterAndEssentials(Resource):
 
             while not self.crawl_complete:
                 logger.info(
-                    "********************** crawl-torob-3dlogger.infoerandessentials: Crawling ... **********************")
+                    "********************** crawl-torob_3DPrinterAndEssentials: Crawling ... **********************")
                 time.sleep(5)
                 if self.crawl_complete:
                     break

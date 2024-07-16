@@ -1,8 +1,8 @@
-A web crawler, Used for crawling e-commerce  websites to fetch data like product price, image, and seller ....
+A web crawler, Used for crawling e-commerce  websites to fetch data like product price, image, and seller, etc...
 
 ## Installing / Getting Started
 
-A quick introduction of the minimal setup you need to get a hello world up &
+A quick introduction of the minimal steps you need to get the service up &
 running.
 
 ```shell
