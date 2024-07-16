@@ -16,12 +16,12 @@ from functools import wraps
 import crochet
 # JWT
 import jwt
-# Log
 # Database
 import psycopg2
 # Flask
 from flask import Flask, jsonify, request, abort, current_app
 from flask_restx import Api, Resource, fields, reqparse
+from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 # SQL Alchemy
@@ -102,6 +102,9 @@ cursor = con.cursor()
 
 # app , api
 app = Flask(__name__)
+
+# enable CORS
+CORS(app)
 # Flask database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://docker:docker@postgresDb/crawler_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
