@@ -790,7 +790,7 @@ class CrawlTorob_Charger(Resource):
 
 
 @api.route("/crawl-torob-cable")
-class CrawlTorob_Charger(Resource):
+class CrawlTorob_Cable(Resource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.crawl_complete, self.number_of_items = False, 0
@@ -3318,8 +3318,8 @@ class UserRegistration(Resource):
         username = data.get('username')
         password = data.get('password')
         new_user = UserModel(
-            username=username,
-            password=password
+            username=username, # type: ignore
+            password=password # type: ignore
         )
         try:
             if UserModel.find_by_username(data['username']):
