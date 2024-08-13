@@ -1,10 +1,12 @@
 # Import needed libraries
 import scrapy
 import json
+import logging
 from scrapy.loader import ItemLoader
 from items import Product, ProductSellerDetails, Seller, Category
 from urllib.parse import urlencode
 
+logger = logging.getLogger(__name__)
 
 # Torob spider
 class TorobSpider_AccessPoint(scrapy.Spider):
@@ -13,6 +15,7 @@ class TorobSpider_AccessPoint(scrapy.Spider):
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
         'DOWNLOAD_DELAY': 1,
+        'LOG_LEVEL': 'DEBUG',
         'AUTOTHROTTLE_ENABLED': True,  # Enable AutoThrottle
         'AUTOTHROTTLE_START_DELAY': 1,  # Initial delay for AutoThrottle
         'AUTOTHROTTLE_MAX_DELAY': 3,  # Maximum delay for AutoThrottle
@@ -47,67 +50,61 @@ class TorobSpider_AccessPoint(scrapy.Spider):
         'https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=24&category=1249&category_name=%D8%A7%DA%A9%D8%B3%D8%B3-%D9%BE%D9%88%DB%8C%D9%86%D8%AA-%D9%88-%D8%B1%D8%A7%D8%AF%DB%8C%D9%88-%D9%88%D8%A7%DB%8C%D8%B1%D9%84%D8%B3&source=next_desktop&rank_offset=24&_bt__experiment=&suid=666851b061f6f51da3634898&_url_referrer='
     ]
 
-    def __init__(self, url='', **kwargs):  # The category variable will have the input URL.
-        print("************************* Entered Spider -> url : ", url)
+    def __init__(self, url='', **kwargs):  
+        logger.info("************************* Entered Spider -> url : %s", self.start_requests[0])
+        
         # set custom settings
         self.myBaseUrl = url
-        # self.start_urls.append(self.myBaseUrl)
+
         super().__init__(**kwargs)
-
-        # if len(self.start_urls) > 0:
-        #     self.start_urls.clear()
-
-        # with open('startUrls.txt') as my_file:
-        #     self.start_urls = [line.strip() for line in my_file.readlines()]
 
     API_KEY = '6b98e85e-ad38-466b-806b-7c8511be9d5e'
 
     # Start requests
     def start_requests(self):
-        print("********************** Starting requests ...")
-        # Check IP address to verify proxy
-        ip_check_url = 'https://icanhazip.com/'
-        yield scrapy.Request(url=ip_check_url, callback=self.parse_ip)
-        # yield scrapy.Request(url=self.get_proxy_url(self.start_urls[0]), callback=self.parse)
-        print("********************** Passed Urls till now : ", self.start_urls)
+        logger.debug("Start of start_requests method")  # Debug log to indicate the method has started
+        logger.info("********************** Starting requests ...")
+        logger.info("************************* Start URLs: %s", self.start_urls)
         for url in self.start_urls:
+            logger.debug("Yielding request for URL: %s", url)  # Debug log before yielding each request
             yield scrapy.Request(url=url, callback=self.parse)
-
+        logger.debug("End of start_requests method")  # Debug log to indicate the method has completed)
+            
     # Check the IP
     @staticmethod
     def parse_ip(response):
-        print(f"********************** Checking Current IP ...")
+        logger.info(f"********************** Checking Current IP ...")
         ip_info = response.text
-        print(f"********************** Current IP: {ip_info}")
+        logger.info(f"********************** Current IP: {ip_info}")
 
     # Parse the response
     def parse(self, response, **kwargs):
+     def parse(self, response, **kwargs):
+        logger.debug("Start of parse method")  # Debug log to indicate the method has started
+        logger.info("************************* Is proxy in response.meta?: %s", response.meta)
+    
         json_res = json.loads(response.text)
-        print("********************** Is proxy in response.meta?: ", response.meta)
-
         data = json_res['results']
-
+    
+        logger.debug("Number of items in response: %d", len(data))  # Debug log to indicate how many items were found
+    
         for item in data:
-            # Response contains a field with the name of 'more_info_url', it is the details url of the product
             more_info_url = item['more_info_url']
-
-            print("********************** more_info_url : ", more_info_url)
-
-            # Fetch the product_id from the response
+            logger.info("********************** more_info_url : %s", more_info_url)
+        
             product_id = item['random_key']
+            logger.info("********************** product_id : %s", product_id)
+        
+            yield response.follow(url=more_info_url, callback=self.parse_product_page, cb_kwargs={'product_id': product_id})
 
-            print("********************** product_id : ", product_id)
-            # Send api call to the more info url
-            yield response.follow(url=more_info_url, callback=self.parse_product_page,
-                                  cb_kwargs={'product_id': product_id})
-
-        # Response contains a field with the name of 'next' which is the url of the next page in our pagination,
-        # when it does not exist means that there are no next pages
-        next_page = json_res['next']
+        next_page = json_res.get('next')
         if next_page is not None:
-            print("************************ next_page : ", next_page)
-            # Send an api call to the next page
+            logger.info("************************ next_page : %s", next_page)
             yield response.follow(url=next_page, callback=self.parse, errback=self.handle_error)
+        else:
+            logger.debug("No next page found")  # Debug log to indicate that pagination has ended
+    
+        logger.debug("End of parse method") 
 
     # Parses the response into our structured data
     @staticmethod
@@ -175,4 +172,4 @@ class TorobSpider_AccessPoint(scrapy.Spider):
 
     @staticmethod
     def handle_error(error):
-        print("********************** An error occurred:", error.getErrorMessage())
+        logger.info("********************** An error occurred: %s", error.getErrorMessage())

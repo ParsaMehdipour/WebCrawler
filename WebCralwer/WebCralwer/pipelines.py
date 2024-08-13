@@ -26,20 +26,20 @@ from Services.TorobBrandService import TorobBrandService
 from Services.TorobSellerService import TorobSellerService
 from Services.TorobCategoryService import TorobCategoryService
 from Services.TorobProductSellerDetailsService import TorobProductSellerDetailsService
+import logging
 
-Base = declarative_base()
-
+logger = logging.getLogger(__name__)
 
 class WebcralwerPipeline:
     @staticmethod
     def process_item(item, spider):
-        print("********************** Processing item in pipeline:", item)
+        logger.info(f"Received item in pipeline: {item}")
         return item
 
 
 class CreateDatabasePostgresPipeline:
     def __init__(self):
-        print("********************** Creating database postgres **********************")
+        logger.info("********************** Creating database postgres **********************")
         # Connect to the PostgresSQL database
         try:
             self.connection = psycopg2.connect(
@@ -50,14 +50,13 @@ class CreateDatabasePostgresPipeline:
             )
 
             self.cursor = self.connection.cursor()
-            print("********************** cursor: ", self.cursor)
 
             # Create 'public' schema if it doesn't exist
             self.cursor.execute("CREATE SCHEMA IF NOT EXISTS public")
 
             # Create Products table if none exists
             self.cursor.execute("""
-                                    CREATE TABLE IF NOT EXISTS public.Brands(
+                                    CREATE TABLE IF NOT EXISTS public.torob_brands(
                                     id SERIAL PRIMARY KEY, 
                                     title TEXT,
                                     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -66,18 +65,18 @@ class CreateDatabasePostgresPipeline:
 
             # Create Products table if none exists
             self.cursor.execute("""
-                                  CREATE TABLE IF NOT EXISTS public.Categories(
+                                  CREATE TABLE IF NOT EXISTS public.torob_categories(
                                   id SERIAL PRIMARY KEY, 
                                   title TEXT,
                                   url TEXT,
-                                  brand_id INTEGER REFERENCES public.Brands(id), 
+                                  brand_id INTEGER REFERENCES public.torob_brands(id), 
                                   created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                                   )
                                   """)
 
             # Create Products table if none exists
             self.cursor.execute("""
-                  CREATE TABLE IF NOT EXISTS public.Products(
+                  CREATE TABLE IF NOT EXISTS public.torob_products(
                   id TEXT PRIMARY KEY, 
                   image_url TEXT,
                   name1 TEXT,
@@ -95,7 +94,7 @@ class CreateDatabasePostgresPipeline:
 
             # Create Seller if none exists
             self.cursor.execute("""
-                        CREATE TABLE IF NOT EXISTS public.Sellers(
+                        CREATE TABLE IF NOT EXISTS public.torob_sellers(
                          id SERIAL PRIMARY KEY,
                          name TEXT,
                          city TEXT,
@@ -105,7 +104,7 @@ class CreateDatabasePostgresPipeline:
                         """)
 
             self.cursor.execute("""
-                CREATE TABLE IF NOT EXISTS public.ProductSellerDetails(
+                CREATE TABLE IF NOT EXISTS public.torob_product_seller_details(
                     id SERIAL PRIMARY KEY,
                     name1 TEXT,
                     name2 TEXT,
@@ -115,19 +114,19 @@ class CreateDatabasePostgresPipeline:
                     price_text TEXT,
                     last_price_change_date DATE,
                     page_url TEXT,
-                    product_id TEXT REFERENCES public.Products(id),
-                    seller_id INTEGER REFERENCES public.Sellers(id),
+                    product_id TEXT REFERENCES public.torob_products(id),
+                    seller_id INTEGER REFERENCES public.torob_sellers(id),
                     is_stock BOOLEAN,
                     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
             self.connection.commit()
         except Exception as e:
-            print("Error:", e)
+            logger.info("Error:", e)
 
     def close_spider(self, spider):
         # Close cursor & connection to database
-        print("***************Closing spider***************")
+        logger.info("***************Closing spider***************")
         self.cursor.close()
         self.connection.close()
 
@@ -145,16 +144,14 @@ class InsetIntoDatabasePostgresPipeline:
         self.torobBrandService = TorobBrandService(self.torobBrandRepository)
         self.torobSellerService = TorobSellerService(self.torobSellerRepository)
         self.torobCategoryService = TorobCategoryService(self.torobCategoryRepository)
-        self.torobProductSellerDetailsService = TorobProductSellerDetailsService(
-            self.torobProductSellerDetailsRepository)
+        self.torobProductSellerDetailsService = TorobProductSellerDetailsService(self.torobProductSellerDetailsRepository)
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls()
 
     def process_item(self, item, spider):
-        session = self.Session()
-        print("********************** Processing item type:", type(item))
+        logger.info("********************** Processing item type: %s", type(item))
         try:
             if isinstance(item, Product):
                 category_name = ""
@@ -188,7 +185,7 @@ class InsetIntoDatabasePostgresPipeline:
                                 self.torobCategoryService.create_item(category)
                             category_name = category_name + category['title'] + " - "
 
-                print("********************** Product item:", item['id'], item['name1'], item.get('name2', 'Empty'))
+                logger.info("********************** Product item: id=%s, name1=%s, name2=%s", item['id'], item['name1'], item.get('name2', 'Empty'))
                 product_id = item['id']
                 existing_product = self.torobProductService.get_item_by_id(product_id)
                 if existing_product is None:
@@ -208,7 +205,7 @@ class InsetIntoDatabasePostgresPipeline:
                     )
                     self.torobProductService.create_item(product)
                 else:
-                    print("********************** Product item with the fallowing id exists: ", product_id)
+                    logger.info("********************** Product item with the fallowing id exists: %s", product_id)
 
                 psds = item['product_seller_details']
 
@@ -230,7 +227,7 @@ class InsetIntoDatabasePostgresPipeline:
                                 )
                                 self.torobSellerService.create_item(seller)
                         else:
-                            print("********************** Seller item with the fallowing id exists: ", seller_id)
+                            logger.info("********************** Seller item with the fallowing id exists: %s", seller_id)
 
                         product_seller_details = TorobProductSellerDetails(
                             name1=psd.get('name1', 'Empty'),
@@ -248,7 +245,7 @@ class InsetIntoDatabasePostgresPipeline:
                         )
                         self.torobProductSellerDetailsService.create_item(product_seller_details)
             else:
-                print("********************** Unknown item type:", type(item))
+                logger.info("********************** Unknown item type: %s", type(item))
         except Exception as e:
             raise e
 
