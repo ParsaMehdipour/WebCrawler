@@ -1,5 +1,5 @@
 from DataAccess.Interfaces.IRepository import IRepository
-from ..Models.Torob.TorobBrand import TorobBrand
+from DataAccess.Models.Torob.TorobBrand import TorobBrand
 
 
 # Represents a torob brand repository
