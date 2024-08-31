@@ -1,4 +1,4 @@
-from ..Interfaces.IRepository import IRepository
+from DataAccess.Interfaces.IRepository import IRepository
 from ..Models.Torob.TorobBrand import TorobBrand
 
 
