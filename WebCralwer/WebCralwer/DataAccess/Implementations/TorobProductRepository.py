@@ -1,5 +1,5 @@
-from ..Interfaces.IRepository import IRepository
-from ..Models.Torob.TorobProduct import TorobProduct
+from DataAccess.Interfaces.IRepository import IRepository
+from DataAccess.Models.Torob.TorobProduct import TorobProduct
 
 
 # Represents a torob product repository
