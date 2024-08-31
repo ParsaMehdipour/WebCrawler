@@ -1,5 +1,5 @@
-from ..Interfaces.IRepository import IRepository
-from ..Models.Torob.TorobCategory import TorobCategory
+from DataAccess.Interfaces.IRepository import IRepository
+from DataAccess.Models.Torob.TorobCategory import TorobCategory
 
 
 # Represents a torob category repository
