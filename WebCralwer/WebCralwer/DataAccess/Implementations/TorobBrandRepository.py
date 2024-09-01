@@ -1,5 +1,5 @@
-from ..Interfaces.IRepository import IRepository
-from WebCralwer.DataAccess.Models.Torob.TorobModels import TorobBrand
+from DataAccess.Interfaces.IRepository import IRepository
+from DataAccess.Models.Torob.TorobModels import TorobBrand
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

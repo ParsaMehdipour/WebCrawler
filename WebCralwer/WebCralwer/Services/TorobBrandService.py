@@ -1,4 +1,4 @@
-from WebCralwer.DataAccess.Models.Torob.TorobModels import TorobBrand
+from DataAccess.Models.Torob.TorobModels import TorobBrand
 
 
 # Represents a torob brand service

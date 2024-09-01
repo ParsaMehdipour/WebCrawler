@@ -32,11 +32,7 @@ from scrapy.crawler import Crawler
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 # Torob crawler
-from DataAccess.Models.Torob.TorobProduct import TorobProduct
-from DataAccess.Models.Torob.TorobCategory import TorobCategory
-from DataAccess.Models.Torob.TorobSeller import TorobSeller
-from DataAccess.Models.Torob.TorobBrand import TorobBrand
-from DataAccess.Models.Torob.TorobProductSellerDetails import TorobProductSellerDetails
+from DataAccess.Models.Torob.TorobModels import TorobProduct, TorobCategory, TorobSeller, TorobBrand, TorobProductSellerDetails
 from Dtos.Torob.TorobStructuredProductDto import TorobStructuredProductDto
 from spiders import (TorobSpider_Phone,
                      TorobSpider_Tablet,
