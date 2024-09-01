@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/DataAccess/Implementations/TorobBrandRepository.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/DataAccess/Implementations/TorobCategoryRepository.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/DataAccess/Implementations/TorobProductRepository.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/DataAccess/Implementations/TorobProductSellerDetailsRepository.py" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/DataAccess/Implementations/TorobSellerRepository.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/main.py" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/WebCralwer/WebCralwer/pipelines.py" dialect="H2" />
   </component>
