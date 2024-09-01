@@ -51,7 +51,7 @@ class TorobSpider_AccessPoint(scrapy.Spider):
     ]
 
     def __init__(self, url='', **kwargs):  
-        logger.info("************************* Entered Spider -> url : %s", self.start_requests[0])
+        print("************************* Entered Spider -> url : ", self.start_requests[0])
         
         # set custom settings
         self.myBaseUrl = url
@@ -62,49 +62,48 @@ class TorobSpider_AccessPoint(scrapy.Spider):
 
     # Start requests
     def start_requests(self):
-        logger.debug("Start of start_requests method")  # Debug log to indicate the method has started
-        logger.info("********************** Starting requests ...")
-        logger.info("************************* Start URLs: %s", self.start_urls)
+        print("Start of start_requests method")  # Debug log to indicate the method has started
+        print("********************** Starting requests ...")
+        print("************************* Start URLs: ", self.start_urls)
         for url in self.start_urls:
-            logger.debug("Yielding request for URL: %s", url)  # Debug log before yielding each request
+            print("Yielding request for URL: ", url)  # Debug log before yielding each request
             yield scrapy.Request(url=url, callback=self.parse)
-        logger.debug("End of start_requests method")  # Debug log to indicate the method has completed)
+        print("End of start_requests method")  # Debug log to indicate the method has completed)
             
     # Check the IP
     @staticmethod
     def parse_ip(response):
-        logger.info(f"********************** Checking Current IP ...")
+        print(f"********************** Checking Current IP ...")
         ip_info = response.text
-        logger.info(f"********************** Current IP: {ip_info}")
+        print(f"********************** Current IP: ", ip_info)
 
     # Parse the response
     def parse(self, response, **kwargs):
-     def parse(self, response, **kwargs):
-        logger.debug("Start of parse method")  # Debug log to indicate the method has started
-        logger.info("************************* Is proxy in response.meta?: %s", response.meta)
+        print("Start of parse method")  # Debug log to indicate the method has started
+        print("************************* Is proxy in response.meta?: ", response.meta)
     
         json_res = json.loads(response.text)
         data = json_res['results']
     
-        logger.debug("Number of items in response: %d", len(data))  # Debug log to indicate how many items were found
+        print("Number of items in response: ", len(data))  # Debug log to indicate how many items were found
     
         for item in data:
             more_info_url = item['more_info_url']
-            logger.info("********************** more_info_url : %s", more_info_url)
+            print("********************** more_info_url : ", more_info_url)
         
             product_id = item['random_key']
-            logger.info("********************** product_id : %s", product_id)
+            print("********************** product_id : ", product_id)
         
             yield response.follow(url=more_info_url, callback=self.parse_product_page, cb_kwargs={'product_id': product_id})
 
         next_page = json_res.get('next')
         if next_page is not None:
-            logger.info("************************ next_page : %s", next_page)
+            print("************************ next_page : ", next_page)
             yield response.follow(url=next_page, callback=self.parse, errback=self.handle_error)
         else:
-            logger.debug("No next page found")  # Debug log to indicate that pagination has ended
+            print("No next page found")  # Debug log to indicate that pagination has ended
     
-        logger.debug("End of parse method") 
+        print("End of parse method") 
 
     # Parses the response into our structured data
     @staticmethod
@@ -172,4 +171,4 @@ class TorobSpider_AccessPoint(scrapy.Spider):
 
     @staticmethod
     def handle_error(error):
-        logger.info("********************** An error occurred: %s", error.getErrorMessage())
+        print("********************** An error occurred: ", error.getErrorMessage())

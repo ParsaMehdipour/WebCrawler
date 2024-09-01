@@ -1,4 +1,4 @@
-from DataAccess.Models.Torob.TorobSeller import TorobSeller
+from WebCralwer.DataAccess.Models.Torob.TorobModels import TorobSeller
 
 
 # Represents a torob seller service

@@ -10,22 +10,18 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 import psycopg2
-from items import Product
-from DataAccess.Models.Torob.TorobProduct import TorobProduct
-from DataAccess.Models.Torob.TorobSeller import TorobSeller
-from DataAccess.Models.Torob.TorobProductSellerDetails import TorobProductSellerDetails
-from DataAccess.Models.Torob.TorobBrand import TorobBrand
-from DataAccess.Models.Torob.TorobCategory import TorobCategory
-from DataAccess.Implementations.TorobProductRepository import TorobProductRepository
-from DataAccess.Implementations.TorobSellerRepository import TorobSellerRepository
-from DataAccess.Implementations.TorobCategoryRepository import TorobCategoryRepository
-from DataAccess.Implementations.TorobBrandRepository import TorobBrandRepository
-from DataAccess.Implementations.TorobProductSellerDetailsRepository import TorobProductSellerDetailsRepository
-from Services.TorobProductService import TorobProductService
-from Services.TorobBrandService import TorobBrandService
-from Services.TorobSellerService import TorobSellerService
-from Services.TorobCategoryService import TorobCategoryService
-from Services.TorobProductSellerDetailsService import TorobProductSellerDetailsService
+from WebCralwer.items import Product
+from WebCralwer.DataAccess.Models.Torob.TorobModels import TorobBrand, TorobProduct, TorobProductSellerDetails, TorobCategory, TorobSeller
+from WebCralwer.DataAccess.Implementations.TorobProductRepository import TorobProductRepository
+from WebCralwer.DataAccess.Implementations.TorobSellerRepository import TorobSellerRepository
+from WebCralwer.DataAccess.Implementations.TorobCategoryRepository import TorobCategoryRepository
+from WebCralwer.DataAccess.Implementations.TorobBrandRepository import TorobBrandRepository
+from WebCralwer.DataAccess.Implementations.TorobProductSellerDetailsRepository import TorobProductSellerDetailsRepository
+from WebCralwer.Services.TorobProductService import TorobProductService
+from WebCralwer.Services.TorobBrandService import TorobBrandService
+from WebCralwer.Services.TorobSellerService import TorobSellerService
+from WebCralwer.Services.TorobCategoryService import TorobCategoryService
+from WebCralwer.Services.TorobProductSellerDetailsService import TorobProductSellerDetailsService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,7 +39,8 @@ class CreateDatabasePostgresPipeline:
         # Connect to the PostgresSQL database
         try:
             self.connection = psycopg2.connect(
-                host='postgresDb',
+                host='localhost',
+                port='5432',
                 user='docker',
                 password='docker',
                 database='crawler_db'
@@ -110,9 +107,10 @@ class CreateDatabasePostgresPipeline:
                     name2 TEXT,
                     shop_name TEXT,
                     shop_name2 TEXT,
+                    shop_city TEXT,
                     price FLOAT,
                     price_text TEXT,
-                    last_price_change_date DATE,
+                    last_price_change_date TEXT,
                     page_url TEXT,
                     product_id TEXT REFERENCES public.torob_products(id),
                     seller_id INTEGER REFERENCES public.torob_sellers(id),
@@ -134,7 +132,7 @@ class CreateDatabasePostgresPipeline:
 class InsetIntoDatabasePostgresPipeline:
     def __init__(self):
         # Connect to the database
-        self.connectionString = create_engine('postgresql://docker:docker@postgresDb/crawler_db')
+        self.connectionString = 'postgresql://docker:docker@localhost:5432/crawler_db'
         self.torobProductRepository = TorobProductRepository(self.connectionString)
         self.torobSellerRepository = TorobSellerRepository(self.connectionString)
         self.torobCategoryRepository = TorobCategoryRepository(self.connectionString)
@@ -179,10 +177,9 @@ class InsetIntoDatabasePostgresPipeline:
                                     id=category['id'],
                                     title=category.get('title', 'Empty'),
                                     url=category.get('url', 'Empty'),
-                                    brand_id=None,
                                     created_on=datetime.now()
                                 )
-                                self.torobCategoryService.create_item(category)
+                                self.torobCategoryService.create_item(database_category)
                             category_name = category_name + category['title'] + " - "
 
                 logger.info("********************** Product item: id=%s, name1=%s, name2=%s", item['id'], item['name1'], item.get('name2', 'Empty'))

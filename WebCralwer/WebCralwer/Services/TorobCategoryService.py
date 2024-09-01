@@ -1,4 +1,4 @@
-from DataAccess.Models.Torob.TorobCategory import TorobCategory
+from WebCralwer.DataAccess.Models.Torob.TorobModels import TorobCategory
 
 
 # Represents a torob category service
