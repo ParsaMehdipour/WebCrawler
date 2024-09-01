@@ -32,7 +32,8 @@ from scrapy.crawler import Crawler
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 # Torob crawler
-from pipelines import DatabaseProduct, DatabaseSeller, DatabaseProductSellerDetails, StructuredProductDto
+from DataAccess.Models.Torob.TorobModels import TorobProduct, TorobCategory, TorobSeller, TorobBrand, TorobProductSellerDetails
+from Dtos.Torob.TorobStructuredProductDto import TorobStructuredProductDto
 from spiders import (TorobSpider_Phone,
                      TorobSpider_Tablet,
                      TorobSpider_Headphone,
@@ -81,13 +82,12 @@ from spiders import (TorobSpider_Phone,
                      TorobSpider_NetworkAndSecurityCamera,
                      TorobSpider_Recorder)
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging once
+configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 logger = logging.getLogger(__name__)
+
 # setting up crochet to execute
 crochet.setup()
-
-# Configur logging
-configure_logging({"LOG_FORMAT": "%(levelname)s: %(message)s"})
 
 # Searching database connection
 con = psycopg2.connect(
@@ -212,17 +212,17 @@ def fetch_all_products(page=1, per_page=10):
         result_products = cursor.fetchall()
         products = []
         for row in result_products:
-            product = DatabaseProduct(id=row[0],
-                                      image_url=row[1],
-                                      name1=row[2],
-                                      name2=row[3],
-                                      more_info_url=row[4],
-                                      price=row[5],
-                                      price_text=row[6],
-                                      shop_text=row[7],
-                                      is_stock=row[8],
-                                      created_on=row[11]
-                                      )
+            product = TorobProduct(id=row[0],
+                                   image_url=row[1],
+                                   name1=row[2],
+                                   name2=row[3],
+                                   more_info_url=row[4],
+                                   price=row[5],
+                                   price_text=row[6],
+                                   shop_text=row[7],
+                                   is_stock=row[8],
+                                   created_on=row[11]
+                                   )
             products.append(product)
         return products
     except psycopg2.Error as e:
@@ -243,12 +243,12 @@ def fetch_all_sellers(page=1, per_page=10, search_name=None):
         result_sellers = cursor.fetchall()
         sellers = []
         for row in result_sellers:
-            seller = DatabaseSeller(id=row[0],
-                                    name=row[1],
-                                    city=row[2],
-                                    is_flagged=row[3],
-                                    created_on=row[4]
-                                    )
+            seller = TorobSeller(id=row[0],
+                                 name=row[1],
+                                 city=row[2],
+                                 is_flagged=row[3],
+                                 created_on=row[4]
+                                 )
             sellers.append(seller)
         return sellers
     except psycopg2.Error as e:
@@ -267,20 +267,20 @@ def fetch_all_product_seller_details(product_id, page=1, per_page=10):
         result_product_seller_details = cursor.fetchall()
         product_seller_details_list = []
         for row in result_product_seller_details:
-            product_seller_details = DatabaseProductSellerDetails(id=row[0],
-                                                                  name1=row[1],
-                                                                  name2=row[2],
-                                                                  shop_name=row[3],
-                                                                  shop_city=row[4],
-                                                                  price=row[5],
-                                                                  price_text=row[6],
-                                                                  last_price_change_date=row[7],
-                                                                  page_url=row[8],
-                                                                  is_stock=row[9],
-                                                                  created_on=row[10],
-                                                                  seller_id=row[11],
-                                                                  product_id=row[12],
-                                                                  )
+            product_seller_details = TorobSeller(id=row[0],
+                                                 name1=row[1],
+                                                 name2=row[2],
+                                                 shop_name=row[3],
+                                                 shop_city=row[4],
+                                                 price=row[5],
+                                                 price_text=row[6],
+                                                 last_price_change_date=row[7],
+                                                 page_url=row[8],
+                                                 is_stock=row[9],
+                                                 created_on=row[10],
+                                                 seller_id=row[11],
+                                                 product_id=row[12],
+                                                 )
             product_seller_details_list.append(product_seller_details)
         return product_seller_details_list
     except psycopg2.Error as e:
@@ -314,18 +314,18 @@ def fetch_structured_products_with_search(page=1, per_page=10, search_name=""):
         structured_products = []
 
         for row in result_structured_data:
-            structured_product = StructuredProductDto(name1=row[0],
-                                                      name2=row[1],
-                                                      category_name=row[2],
-                                                      brand_name=row[3],
-                                                      price=row[4],
-                                                      price_text=row[5],
-                                                      created_on=row[6],
-                                                      is_stock=row[7],
-                                                      psd_id=row[8],
-                                                      seller_name=row[9],
-                                                      seller_city=row[10],
-                                                      image_url=row[11])
+            structured_product = TorobStructuredProductDto(name1=row[0],
+                                                           name2=row[1],
+                                                           category_name=row[2],
+                                                           brand_name=row[3],
+                                                           price=row[4],
+                                                           price_text=row[5],
+                                                           created_on=row[6],
+                                                           is_stock=row[7],
+                                                           psd_id=row[8],
+                                                           seller_name=row[9],
+                                                           seller_city=row[10],
+                                                           image_url=row[11])
             structured_products.append(structured_product)
         return structured_products
     except psycopg2.Error as e:
@@ -786,7 +786,7 @@ class CrawlTorob_Charger(Resource):
 
 
 @api.route("/crawl-torob-cable")
-class CrawlTorob_Charger(Resource):
+class CrawlTorob_Cable(Resource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.crawl_complete, self.number_of_items = False, 0
@@ -3314,8 +3314,8 @@ class UserRegistration(Resource):
         username = data.get('username')
         password = data.get('password')
         new_user = UserModel(
-            username=username,
-            password=password
+            username=username, # type: ignore
+            password=password # type: ignore
         )
         try:
             if UserModel.find_by_username(data['username']):
