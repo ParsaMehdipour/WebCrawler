@@ -24,7 +24,7 @@ class TorobSpider_Cable(scrapy.Spider):
         'SCRAPEOPS_FAKE_USER_AGENT_ENABLED': True,
         'SCRAPEOPS_NUM_RESULTS': 30,
         'DOWNLOADER_MIDDLEWARES': {
-            'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1,
+            # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 1,
             'middlewares.ScrapeOpsFakeBrowserHeaderAgentMiddleware': 543
         },
         'ITEM_PIPELINES': {
