@@ -40,15 +40,15 @@ services:
   #       condition: on-failure
 
 
-  polipo:
-    image: 'clue/polipo'
-    container_name: polipo
-    command: proxyAddress=0.0.0.0 proxyPort=8181 socksParentProxy=127.0.0.1:9050
-    deploy:
-      restart_policy:
-        condition: on-failure
-    networks:
-      - crawler-network
+  # polipo:
+  #   image: 'clue/polipo'
+  #   container_name: polipo
+  #   command: proxyAddress=0.0.0.0 proxyPort=8181 socksParentProxy=torproxy:9050
+  #   deploy:
+  #     restart_policy:
+  #       condition: on-failure
+  #   networks:
+  #     - crawler-network
 
 
   crawler:
@@ -58,10 +58,10 @@ services:
       - "5000:5000"
     depends_on:
       - postgresDb
-      - torproxy
+      # - torproxy
     environment:
-      - http_proxy=http://polipo:8181
-      - https_proxy=http://polipo:8181
+      # - http_proxy=http://polipo:8181
+      # - https_proxy=http://polipo:8181
       - SECRET_KEY=this_is_our_little_secret
     build:
       context: .
