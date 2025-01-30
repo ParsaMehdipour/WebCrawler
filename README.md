@@ -1,83 +1,106 @@
-A web crawler, Used for crawling e-commerce  websites to fetch data like product price, image, and seller, etc...
+# 🌐 WebCrawler
 
-## Installing / Getting Started
+A powerful web crawler designed to scrape e-commerce websites and extract valuable data such as product prices, images, sellers, and more.
 
-A quick introduction of the minimal steps you need to get the service up &
-running.
+---
 
-```shell
+## 🚀 Features
+
+✅ Crawl e-commerce websites to gather product information.  
+✅ Extract product details like prices, images, and seller information.  
+✅ Store extracted data in a PostgreSQL database.  
+✅ Optimized for efficiency and scalability.
+
+---
+
+## 🛠️ Requirements
+
+- **Python 3.x**
+- **Scrapy Framework**
+- **PostgreSQL**
+- **Docker (Optional, for containerized deployment)**
+
+---
+
+## 📦 Installation
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/ParsaMehdipour/WebCrawler.git
+cd WebCrawler
+```
+
+### 2️⃣ Set Up a Virtual Environment
+```bash
 python -m venv venv
 ```
 
-## Activate venv : 
-Linux:
-```shell
-source venv/bin/activate
+### 3️⃣ Activate the Virtual Environment
+- On **Linux/macOS**:
+  ```bash
+  source venv/bin/activate
+  ```
+- On **Windows**:
+  ```bash
+  venv\Scripts\activate
+  ```
+
+### 4️⃣ Install Dependencies
+```bash
+pip install -r requirements.txt
 ```
 
-windows:
-```shell
-venv/bin/activate
+---
+
+## ⚙️ Configuration
+
+### 🛢️ PostgreSQL Setup
+1. Ensure PostgreSQL is installed and running.
+2. Create a database and user for the application.
+
+### 🔧 Database Connection Configuration
+Modify the connection settings in the code:
+```python
+self.connection = psycopg2.connect(
+    host='localhost',
+    user='your_username',
+    password='your_password',
+    database='your_database'
+)
 ```
 
-## Installing scrapy 
+---
 
-```shell
-pip install scrapy
+## 🚴 Usage
+
+### ▶️ Running the Crawler
+```bash
+scrapy crawl your_spider_name
+```
+Replace `your_spider_name` with the name of the spider you intend to run.
+
+### 🐳 Running with Docker (Optional)
+#### 1️⃣ Build the Docker image
+```bash
+docker build -t webcrawler .
 ```
 
-## Installing psycopg2 to connect to a Postgres database 
-
-```shell
-pip install psycopg2
-```
-
-Then set your connection string in the following images (one for data seeding and the other for data insertion):
-
-Date seeding
-
-```
-  self.connection = psycopg2.connect(
-                host='localhost',
-                user='docker',
-                password='docker',
-                database='crawler_db'
-            )
-```
-
-Data insertion
-```
-self.engine = create_engine('postgresql://docker:docker@localhost/crawler_db')
-```
-
-
-## Installing sqlalchemy to work with data and data insertion
-
-```shell
-pip install sqlalchemy
-```
-
-
-## Installing flask to provide API endpoints
-
-```shell
-pip install flask
-pip install flask_restx
-```
-
-## Update :
-
-I have added the requirements.txt to make installing the needed packages easier
-
-and also I have added Dockerfile with the docker-compose to containerize the project
-
-Simply run the following command in the directory which the docker-compose file exists
-
-```shell
+#### 2️⃣ Run the Docker container
+```bash
 docker-compose up
 ```
 
-## For starters pass the following link to the /crawl-torob endpoint
+---
 
-https://api.torob.com/v4/base-product/search/?page=1&sort=popularity&size=10&category_name=%D9%85%D9%88%D8%A8%D8%A7%DB%8C%D9%84-%D9%88-%DA%A9%D8%A7%D9%84%D8%A7%DB%8C-%D8%AF%DB%8C%D8%AC%DB%8C%D8%AA%D8%A7%D9%84&category_id=175&category=175&source=next_desktop&suid=66191da888517ca4b24c6853&_bt__experiment=&_url_referrer=
+## 📜 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! If you find any bugs or have feature requests, please open an issue or submit a pull request. 🚀
+
+🎯 Happy Crawling! 🕷️
 
