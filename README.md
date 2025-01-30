@@ -73,13 +73,7 @@ self.connection = psycopg2.connect(
 
 ## 🚴 Usage
 
-### ▶️ Running the Crawler
-```bash
-scrapy crawl your_spider_name
-```
-Replace `your_spider_name` with the name of the spider you intend to run.
-
-### 🐳 Running with Docker (Optional)
+### 🐳 Running with Docker
 #### 1️⃣ Build the Docker image
 ```bash
 docker build -t webcrawler .
